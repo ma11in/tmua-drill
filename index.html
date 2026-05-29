@@ -163,17 +163,21 @@
     </div>
 
     <div class="help">
-      <b>Input syntax</b>
+      <b>Typing &amp; controls</b>
       <div class="help-row">
         <div>Square root</div><div>type <code>sqrt</code> or <kbd>Shift</kbd>+<kbd>S</kbd> → √</div>
         <div>Pi (π)</div><div>type <code>pi</code> or <kbd>Shift</kbd>+<kbd>P</kbd> → π</div>
-        <div>Fraction</div><div><code>3/4</code> (decimals like <code>0.75</code> also accepted)</div>
-        <div>Power</div><div><code>2^5</code> — give the value</div>
-        <div>Surd answer</div><div><code>2sqrt5</code>, <code>2√5</code>, or <code>2 sqrt 5</code> — all fine</div>
-        <div>π in answer</div><div><code>16pi</code> for 16π</div>
-        <div>Pair (two roots)</div><div><code>2,-3</code> — order doesn't matter</div>
-        <div>Submit</div><div><kbd>Enter</kbd></div>
-        <div>Skip</div><div><kbd>Tab</kbd> — counts as wrong, moves on</div>
+        <div>Submit / Skip</div><div><kbd>Enter</kbd> submits · <kbd>Tab</kbd> skips (counts wrong)</div>
+      </div>
+      <b style="display:block;margin-top:14px">Answer formats — give answers like this</b>
+      <div class="help-row">
+        <div>Whole number</div><div><code>225</code></div>
+        <div>Fraction</div><div><code>3/4</code> &nbsp;(or the decimal <code>0.75</code>)</div>
+        <div>Surd</div><div><code>2sqrt5</code> or <code>2√5</code> — simplified</div>
+        <div>Multiple of π</div><div><code>16pi</code> for 16π &nbsp;· period: <code>2pi/3</code></div>
+        <div>Exact trig</div><div>exact only, e.g. <code>sqrt3/2</code> — not a decimal</div>
+        <div>Two values</div><div>roots · coords · boundaries → <code>2,-3</code> (order free)</div>
+        <div>Inequality</div><div><code>x&lt;6</code> · <code>-4&lt;x&lt;2</code> · <code>x&lt;1 or x&gt;7</code></div>
       </div>
     </div>
     <p class="credit">Created by <a href="https://github.com/ma11in/tmua-drill" target="_blank" rel="noopener">ma11in</a> · free &amp; open-source (MIT)</p>
@@ -548,7 +552,7 @@ const GENERATORS = {
         };
       }
     }},
-  quadInequalityBounds: { name: 'Quadratic ineq bounds', group: 'algebra', example: 'x²−5x+6<0 → 2,3',
+  quadInequalityBounds: { name: 'Quadratic inequality', group: 'algebra', example: 'x²−5x+6<0 → 2,3  or  2<x<3',
     generate() {
       while (true) {
         const r1 = pick([-7,-5,-4,-3,-2,-1,1,2,3,4,5,6,7]);
@@ -559,11 +563,15 @@ const GENERATORS = {
         const op = pick(['<', '>']);
         const bStr = b === 0 ? '' : signed(b) + 'x';
         const cStr = c === 0 ? '' : signed(c);
-        const sorted = [r1, r2].sort((x, y) => x - y);
+        const [lo, hi] = [r1, r2].sort((x, y) => x - y);
+        // canonical = the two boundary values; also accept the full, direction-correct solution set
+        const alts = [`${hi},${lo}`];
+        if (op === '<') alts.push(`${lo}<x<${hi}`);
+        else alts.push(`x<${lo} or x>${hi}`, `x<${lo},x>${hi}`, `x>${hi} or x<${lo}`, `x>${hi},x<${lo}`);
         return {
-          display: `x^{2}${bStr}${cStr} ${op} 0;\\;\\text{boundaries}`,
-          answer: `${sorted[0]},${sorted[1]}`,
-          alts: [`${sorted[1]},${sorted[0]}`],
+          display: `x^{2}${bStr}${cStr} ${op} 0;\\;\\text{solve}`,
+          answer: `${lo},${hi}`,
+          alts,
           kind: 'pair'
         };
       }
