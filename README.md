@@ -1,10 +1,12 @@
 # TMUA Mental Maths Drill
 
+*Created by [ma11in](https://github.com/ma11in) · free & open-source (MIT)*
+
 A free, [Zetamac](https://arithmetic.zetamac.com/)-style timed trainer for the mental-calculation skills the **TMUA** (Test of Mathematics for University Admission) expects you to do *without a calculator*.
 
 Pick the skills you want, set a timer, and answer as many as you can. At the end you get your score, accuracy, per-skill breakdown, and a full review of every question with the correct answers.
 
-**[▶ Live demo](https://YOUR-USERNAME.github.io/tmua-drill/)** ← replace this link after you deploy
+**[▶ Live demo](https://ma11in.github.io/tmua-drill/)**
 
 ---
 
@@ -58,4 +60,4 @@ This is an independent, unofficial practice tool. It is **not affiliated with or
 
 ## License
 
-Free to use, copy, modify, and share.
+© 2026 ma11in. Released under the [MIT License](LICENSE) — you're free to use, modify, and share it, but you must keep the copyright and license notice (i.e. credit the author).
