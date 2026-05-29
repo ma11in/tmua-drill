@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TMUA Mental Maths Drill</title>
+<meta name="description" content="Free Zetamac-style mental maths drill for the TMUA admissions test — arithmetic, surds, trigonometry, algebra, calculus and more. No calculator, no sign-up, works offline.">
+<meta property="og:title" content="TMUA Mental Maths Drill">
+<meta property="og:description" content="Free timed mental-maths trainer for the no-calculator TMUA — pick the skills you want and drill against the clock.">
+<meta property="og:type" content="website">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🧮</text></svg>'>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg: #fafafa; --fg: #222; --muted: #777; --accent: #2563eb;
+    --good: #16a34a; --bad: #dc2626; --card: #fff; --border: #e5e5e5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --fg: #e8e8e8; --muted: #888; --accent: #60a5fa;
+      --good: #4ade80; --bad: #f87171; --card: #1a1c20; --border: #2a2c30;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 16px; line-height: 1.5; min-height: 100vh;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 28px 20px; }
+  h1 { font-size: 26px; margin: 0 0 4px; font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+  fieldset {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 16px 10px; margin: 0 0 12px; background: var(--card);
+  }
+  legend { font-weight: 600; padding: 0 6px; font-size: 14px; }
+  .group-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .bulk { font-size: 12px; color: var(--accent); cursor: pointer; user-select: none; }
+  .skills { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; }
+  @media (max-width: 600px) { .skills { grid-template-columns: 1fr; } }
+  .skill { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 13.5px; cursor: pointer; }
+  .skill input { margin: 0; }
+  .skill .ex { color: var(--muted); font-size: 11.5px; }
+  .controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  .controls label { font-size: 14px; }
+  .controls input[type=number] {
+    width: 70px; padding: 4px 6px; border: 1px solid var(--border);
+    border-radius: 4px; background: var(--card); color: var(--fg); font-size: 14px;
+  }
+  button {
+    background: var(--accent); color: white; border: 0; border-radius: 6px;
+    padding: 8px 18px; font-size: 15px; font-weight: 500; cursor: pointer;
+  }
+  button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  button:hover { filter: brightness(1.1); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .start-row { margin-top: 12px; }
+  .presets { margin-top: 8px; }
+  .presets .small-link { font-size: 13px; color: var(--accent); cursor: pointer; text-decoration: underline; margin-right: 14px; }
+
+  /* Game screen */
+  .gamebox { text-align: center; padding-top: 30px; }
+  .timer { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 22px; color: var(--muted); }
+  .question { font-size: 34px; margin: 30px 0 24px; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+  .answer-row { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+  #answer {
+    font-size: 22px; padding: 10px 14px; width: 280px;
+    border: 1.5px solid var(--border); border-radius: 6px;
+    background: var(--card); color: var(--fg);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; text-align: center;
+  }
+  #answer:focus { outline: none; border-color: var(--accent); }
+  #preview { font-size: 22px; min-width: 100px; min-height: 30px; color: var(--muted); }
+  .flash-good { animation: flash-good 0.25s ease; }
+  .flash-bad { animation: flash-bad 0.4s ease; }
+  @keyframes flash-good {
+    0% { background: rgba(22,163,74,0.4); } 100% { background: transparent; }
+  }
+  @keyframes flash-bad {
+    0%, 50% { background: rgba(220,38,38,0.35); } 100% { background: transparent; }
+  }
+  .stats { margin-top: 28px; display: flex; gap: 24px; justify-content: center; color: var(--muted); font-size: 14px; }
+  .stats b { color: var(--fg); font-size: 17px; font-weight: 600; }
+  .stats .good { color: var(--good); }
+  .stats .bad { color: var(--bad); }
+  .skip-btn { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 6px 12px; font-size: 13px; }
+  .help { margin-top: 22px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); font-size: 13px; color: var(--muted); text-align: left; }
+  .help b { color: var(--fg); }
+  .help code { background: var(--bg); padding: 1px 5px; border-radius: 3px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .help-row { display: grid; grid-template-columns: 150px 1fr; gap: 2px 12px; margin-top: 6px; }
+  .disclaimer { margin-top: 18px; font-size: 11.5px; color: var(--muted); text-align: center; line-height: 1.4; }
+
+  /* Results */
+  .results { text-align: center; padding-top: 30px; }
+  .bigscore { font-size: 60px; font-weight: 700; margin: 12px 0; }
+  .bigscore .denom { font-size: 28px; color: var(--muted); font-weight: 400; }
+  .breakdown { margin: 24px auto; text-align: left; display: inline-block; border: 1px solid var(--border); border-radius: 6px; background: var(--card); padding: 8px 12px; min-width: 320px; max-width: 600px; }
+  .breakdown table { border-collapse: collapse; width: 100%; }
+  .breakdown td { padding: 3px 8px; font-size: 13px; }
+  .breakdown td:nth-child(2) { text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .recap { margin: 20px auto; max-width: 620px; text-align: left; border: 1px solid var(--border); border-radius: 6px; background: var(--card); padding: 8px 0; max-height: 460px; overflow-y: auto; }
+  .recap-item { display: grid; grid-template-columns: 24px 1fr 1fr; gap: 10px; padding: 4px 14px; font-size: 13px; align-items: center; border-bottom: 1px solid var(--border); }
+  .recap-item:last-child { border-bottom: 0; }
+  .recap-item .mark.good { color: var(--good); }
+  .recap-item .mark.bad { color: var(--bad); }
+  .recap-item .yours { color: var(--muted); }
+  .recap-item .yours.bad { color: var(--bad); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+  <!-- SETUP SCREEN -->
+  <div id="setup">
+    <h1>TMUA Mental Maths Drill</h1>
+    <p class="sub">A Zetamac-style timer covering the full no-calculator TMUA skill set — arithmetic, surds, trig, algebra, calculus, sequences and more. Tick the skills you want and hit start. No sign-up · works offline.</p>
+
+    <div id="skillsContainer"></div>
+
+    <div class="controls">
+      <label>Duration <input type="number" id="duration" value="120" min="20" max="900" step="10"> s</label>
+    </div>
+    <div class="presets">
+      <span class="small-link" data-preset="zetamac">Zetamac classic</span>
+      <span class="small-link" data-preset="tier1">TMUA Tier 1 (arith + recall + surds + trig + algebra)</span>
+      <span class="small-link" data-preset="tier2">+ Tier 2 (calc + sequences + coords)</span>
+      <span class="small-link" data-preset="all">Everything</span>
+    </div>
+    <div class="start-row">
+      <button id="startBtn">Start</button>
+    </div>
+
+    <div class="help">
+      <b>Input syntax</b>
+      <div class="help-row">
+        <div>Square root</div><div>type <code>sqrt</code> or <kbd>Shift</kbd>+<kbd>S</kbd> → √</div>
+        <div>Pi (π)</div><div>type <code>pi</code> or <kbd>Shift</kbd>+<kbd>P</kbd> → π</div>
+        <div>Fraction</div><div><code>3/4</code> (decimals like <code>0.75</code> also accepted)</div>
+        <div>Power</div><div><code>2^5</code> — give the value</div>
+        <div>Surd answer</div><div><code>2sqrt5</code>, <code>2√5</code>, or <code>2 sqrt 5</code> — all fine</div>
+        <div>π in answer</div><div><code>16pi</code> for 16π</div>
+        <div>Pair (two roots)</div><div><code>2,-3</code> — order doesn't matter</div>
+        <div>Submit</div><div><kbd>Enter</kbd></div>
+        <div>Skip</div><div><kbd>Tab</kbd> — counts as wrong, moves on</div>
+      </div>
+    </div>
+    <p class="disclaimer">Free, open practice tool · not affiliated with or endorsed by Cambridge Assessment Admissions Testing or the TMUA · all question values are randomly generated for drilling.</p>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game" class="hidden gamebox">
+    <div class="timer" id="timer">2:00</div>
+    <div class="question" id="question"></div>
+    <div class="answer-row">
+      <input id="answer" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <span id="preview"></span>
+    </div>
+    <div class="stats">
+      <span>Score <b id="score">0</b></span>
+      <span>Right <b class="good" id="rightCount">0</b></span>
+      <span>Wrong <b class="bad" id="wrongCount">0</b></span>
+      <button class="skip-btn" id="skipBtn">Skip</button>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="results" class="hidden results">
+    <h1>Time!</h1>
+    <div class="bigscore"><span id="finalScore">0</span><span class="denom"> / <span id="finalTotal">0</span></span></div>
+    <p class="sub" id="accuracy"></p>
+    <div class="breakdown" id="breakdown"></div>
+    <p class="sub">All questions this session (newest first)</p>
+    <div class="recap" id="recap"></div>
+    <div>
+      <button id="againBtn">Play again</button>
+      <button class="ghost" id="backBtn">Change skills</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+//=========================================================
+// UTILITIES
+//=========================================================
+const $ = (id) => document.getElementById(id);
+const $$ = (sel) => document.querySelectorAll(sel);
+const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+function nCr(n, k) {
+  if (k < 0 || k > n) return 0;
+  k = Math.min(k, n - k);
+  let r = 1;
+  for (let i = 1; i <= k; i++) r = (r * (n - i + 1)) / i;
+  return Math.round(r);
+}
+function reduceFrac(num, den) {
+  if (den < 0) { num = -num; den = -den; }
+  const g = gcd(Math.abs(num), den);
+  return [num / g, den / g];
+}
+function fracStr(num, den) {
+  const [n, d] = reduceFrac(num, den);
+  return d === 1 ? `${n}` : `${n}/${d}`;
+}
+// build polynomial display string like "2x^2-3x+5"
+function polyDisp(coefs) { // [a2, a1, a0]
+  const parts = [];
+  const labels = coefs.length === 3 ? ['x^2', 'x', ''] : ['x', ''];
+  coefs.forEach((c, i) => {
+    if (c === 0) return;
+    const lbl = labels[i];
+    let term;
+    if (lbl) {
+      if (c === 1) term = lbl;
+      else if (c === -1) term = '-' + lbl;
+      else term = `${c}${lbl}`;
+    } else term = `${c}`;
+    if (parts.length === 0) parts.push(term);
+    else parts.push(c > 0 ? '+' + term : term);
+  });
+  return parts.join('') || '0';
+}
+function signed(n) { return n >= 0 ? `+${n}` : `${n}`; }
+
+//=========================================================
+// GENERATORS — each: () => { display, answer, alts?, kind }
+// kind: 'numeric' (digit/fraction equivalence) | 'fraction' | 'pair' | 'expr'
+//=========================================================
+const GENERATORS = {
+
+  // ============ ARITHMETIC ============
+  add: { name: 'Addition', group: 'arith', example: '47 + 38',
+    generate() {
+      const a = rand(12, 99), b = rand(12, 99);
+      return { display: `${a} + ${b}`, answer: `${a + b}`, kind: 'numeric' };
+    }},
+  sub: { name: 'Subtraction', group: 'arith', example: '83 − 27',
+    generate() {
+      const a = rand(20, 120), b = rand(2, a - 1);
+      return { display: `${a} - ${b}`, answer: `${a - b}`, kind: 'numeric' };
+    }},
+  mul: { name: 'Multiplication', group: 'arith', example: '12 × 17',
+    generate() {
+      const a = rand(2, 12), b = rand(11, 25);
+      return { display: `${a} \\times ${b}`, answer: `${a * b}`, kind: 'numeric' };
+    }},
+  div: { name: 'Division', group: 'arith', example: '156 ÷ 12',
+    generate() {
+      const a = rand(2, 12), b = rand(11, 25);
+      return { display: `${a * b} \\div ${a}`, answer: `${b}`, kind: 'numeric' };
+    }},
+  fractions: { name: 'Fractions (+/−)', group: 'arith', example: '⅔ + ⅗',
+    generate() {
+      const denoms = [2, 3, 4, 5, 6, 8];
+      const d1 = pick(denoms), d2 = pick(denoms.filter(d => d !== d1));
+      const n1 = rand(1, d1 - 1), n2 = rand(1, d2 - 1);
+      const op = pick(['+', '-']);
+      const num = op === '+' ? n1 * d2 + n2 * d1 : n1 * d2 - n2 * d1;
+      const den = d1 * d2;
+      const ans = fracStr(num, den);
+      return {
+        display: `\\dfrac{${n1}}{${d1}} ${op} \\dfrac{${n2}}{${d2}}`,
+        answer: ans, alts: [`${num}/${den}`], kind: 'fraction'
+      };
+    }},
+  percent: { name: 'Percentage', group: 'arith', example: '25% of 80',
+    generate() {
+      const combos = [
+        [5,40],[5,60],[5,80],[5,100],[5,200],[5,140],
+        [10,30],[10,50],[10,80],[10,150],[10,250],[10,90],
+        [15,20],[15,40],[15,60],[15,80],[15,100],[15,200],
+        [20,25],[20,35],[20,40],[20,75],[20,150],[20,55],
+        [25,40],[25,60],[25,80],[25,120],[25,200],[25,44],
+        [40,25],[40,50],[40,75],[40,125],[40,15],
+        [50,30],[50,46],[50,84],[50,120],[50,170],
+        [60,25],[60,50],[60,75],[60,200],
+        [75,40],[75,60],[75,80],[75,120],[75,200],
+        [80,25],[80,50],[80,75],[80,125],
+      ];
+      const [pct, n] = pick(combos);
+      return {
+        display: `${pct}\\% \\text{ of } ${n}`,
+        answer: `${(pct * n) / 100}`,
+        kind: 'numeric'
+      };
+    }},
+
+  // ============ RECALL ============
+  squares: { name: 'Squares 11²–25²', group: 'recall', example: '17² = ?',
+    generate() {
+      const n = rand(11, 25);
+      return { display: `${n}^{2}`, answer: `${n * n}`, kind: 'numeric' };
+    }},
+  cubes: { name: 'Cubes 2³–12³', group: 'recall', example: '7³ = ?',
+    generate() {
+      const n = rand(2, 12);
+      return { display: `${n}^{3}`, answer: `${n * n * n}`, kind: 'numeric' };
+    }},
+  powers2: { name: 'Powers of 2', group: 'recall', example: '2⁸ = ?',
+    generate() {
+      const n = rand(4, 12);
+      return { display: `2^{${n}}`, answer: `${Math.pow(2, n)}`, kind: 'numeric' };
+    }},
+  binomCoef: { name: 'Binomial coeff ⁿCᵣ', group: 'recall', example: 'C(6,2)',
+    generate() {
+      const n = rand(3, 9);
+      const k = rand(1, n - 1);
+      return { display: `\\binom{${n}}{${k}}`, answer: `${nCr(n, k)}`, kind: 'numeric' };
+    }},
+
+  // ============ NUMBER THEORY ============
+  smallPrimeFactor: { name: 'Smallest prime factor', group: 'numtheory', example: 'spf(91) = 7',
+    generate() {
+      const p = pick([2, 3, 5, 7]);
+      const bigger = {
+        2: [13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59],
+        3: [11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47],
+        5: [11, 13, 17, 19, 23, 29, 31, 37, 41, 43],
+        7: [11, 13, 17, 19, 23, 29, 31, 37, 41]
+      };
+      const q = pick(bigger[p]);
+      const n = p * q;
+      return {
+        display: `\\text{spf}(${n})`,
+        answer: `${p}`, kind: 'numeric'
+      };
+    }},
+  hcfLcm: { name: 'HCF or LCM', group: 'numtheory', example: 'HCF(36, 48)',
+    generate() {
+      const a = rand(4, 30), b = rand(4, 30);
+      const op = pick(['HCF', 'LCM']);
+      const ans = op === 'HCF' ? gcd(a, b) : (a * b) / gcd(a, b);
+      return {
+        display: `\\text{${op}}(${a}, ${b})`,
+        answer: `${ans}`, kind: 'numeric'
+      };
+    }},
+  binaryToDecimal: { name: 'Binary ↔ decimal', group: 'numtheory', example: '1011₂ = 11',
+    generate() {
+      const dir = pick(['b2d', 'd2b']);
+      const v = rand(2, 63);
+      if (dir === 'b2d') {
+        return {
+          display: `${v.toString(2)}_2 = \\;?_{10}`,
+          answer: `${v}`, kind: 'numeric'
+        };
+      } else {
+        return {
+          display: `${v}_{10} = \\;?_{2}`,
+          answer: `${v.toString(2)}`, kind: 'numeric'
+        };
+      }
+    }},
+
+  // ============ SURDS ============
+  simplifySurd: { name: 'Simplify √n', group: 'surds', example: '√72 → 6√2',
+    generate() {
+      const sqFree = [2, 3, 5, 6, 7, 10, 11, 13, 14, 15];
+      const a = rand(2, 6);
+      const b = pick(sqFree);
+      const n = a * a * b;
+      return {
+        display: `\\sqrt{${n}}`,
+        answer: `${a}sqrt${b}`,
+        alts: [`${a}sqrt(${b})`, `${a}√${b}`, `${a} sqrt ${b}`, `sqrt(${n})`, `sqrt${n}`],
+        kind: 'expr'
+      };
+    }},
+  rationalise: { name: 'Rationalise 1/√n', group: 'surds', example: '1/√5 → √5/5',
+    generate() {
+      const n = pick([2, 3, 5, 6, 7, 10, 11, 13, 14, 15]);
+      return {
+        display: `\\dfrac{1}{\\sqrt{${n}}}`,
+        answer: `sqrt${n}/${n}`,
+        alts: [`sqrt(${n})/${n}`, `(sqrt${n})/${n}`, `(sqrt(${n}))/${n}`, `√${n}/${n}`],
+        kind: 'expr'
+      };
+    }},
+  expandSurdSq: { name: 'Expand (a+b√c)²', group: 'surds', example: '(2+√3)² → 7+4√3',
+    generate() {
+      const a = rand(1, 5);
+      const b = pick([1, 2, 3]);
+      const c = pick([2, 3, 5, 6, 7]);
+      const rat = a*a + b*b*c;
+      const surd = 2*a*b;
+      const bStr = b === 1 ? '' : `${b}`;
+      return {
+        display: `(${a}+${bStr}\\sqrt{${c}})^2`,
+        answer: `${rat}+${surd}sqrt${c}`,
+        alts: [
+          `${rat}+${surd}sqrt(${c})`, `${rat}+${surd}√${c}`,
+          `${surd}sqrt${c}+${rat}`, `${surd}sqrt(${c})+${rat}`, `${surd}√${c}+${rat}`
+        ],
+        kind: 'expr'
+      };
+    }},
+
+  // ============ ALGEBRA ============
+  expandBinomial: { name: 'Expand (x+a)(x+b)', group: 'algebra', example: '(x+3)(x−5)',
+    generate() {
+      const a = pick([-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]);
+      const b = pick([-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]);
+      const mid = a + b;
+      const constTerm = a * b;
+      const askConst = Math.random() < 0.5;
+      const aTeX = a >= 0 ? `+${a}` : `${a}`;
+      const bTeX = b >= 0 ? `+${b}` : `${b}`;
+      return {
+        display: askConst
+          ? `(x${aTeX})(x${bTeX}) = x^{2} ${signed(mid)}x + \\boxed{?}`
+          : `(x${aTeX})(x${bTeX}) = x^{2} + \\boxed{?}\\,x ${signed(constTerm)}`,
+        answer: askConst ? `${constTerm}` : `${mid}`,
+        kind: 'numeric'
+      };
+    }},
+  factorRoots: { name: 'Solve x²+bx+c=0', group: 'algebra', example: 'x²−5x+6=0 → 2,3',
+    generate() {
+      while (true) {
+        const r1 = pick([-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]);
+        const r2 = pick([-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]);
+        if (r1 === r2) continue;
+        const b = -(r1 + r2);
+        const c = r1 * r2;
+        const sorted = [r1, r2].sort((x, y) => x - y);
+        const bStr = b === 0 ? '' : signed(b) + 'x';
+        const cStr = c === 0 ? '' : signed(c);
+        return {
+          display: `x^{2}${bStr}${cStr} = 0`,
+          answer: `${sorted[0]},${sorted[1]}`,
+          alts: [`${sorted[1]},${sorted[0]}`, `${r1},${r2}`, `${r2},${r1}`],
+          kind: 'pair'
+        };
+      }
+    }},
+  completeSq: { name: 'Complete the square', group: 'algebra', example: 'x²+8x+? = (x+4)²',
+    generate() {
+      const half = rand(2, 12);
+      const b = 2 * half;
+      const sign = pick([1, -1]);
+      const bTerm = sign > 0 ? `+${b}x` : `-${b}x`;
+      return {
+        display: `x^{2}${bTerm}+\\boxed{?} = (x${sign>0?'+':'-'}${half})^{2}`,
+        answer: `${half * half}`, kind: 'numeric'
+      };
+    }},
+  discriminant: { name: 'Discriminant b²−4ac', group: 'algebra', example: '2x²−5x+3 → 1',
+    generate() {
+      const a = rand(1, 4);
+      const b = pick([-7,-5,-4,-3,-2,-1,1,2,3,4,5,6,7]);
+      const c = pick([-6,-5,-4,-3,-2,-1,1,2,3,4,5,6]);
+      const disc = b*b - 4*a*c;
+      const aStr = a === 1 ? '' : `${a}`;
+      return {
+        display: `\\Delta\\text{ of }${aStr}x^2${signed(b)}x${signed(c)}`,
+        answer: `${disc}`, kind: 'numeric'
+      };
+    }},
+  substitute: { name: 'Evaluate p(x) at x=k', group: 'algebra', example: 'x²−3x+2 at x=4 → 6',
+    generate() {
+      const a = pick([1, 1, 2, 3]);
+      const b = pick([-5,-4,-3,-2,-1,1,2,3,4,5]);
+      const c = pick([-10,-8,-6,-4,-2,0,2,4,6,8,10]);
+      const x = pick([-3,-2,-1,1,2,3,4,5]);
+      const val = a*x*x + b*x + c;
+      const display = polyDisp([a, b, c]);
+      return {
+        display: `${display}\\text{ at }x=${x}`,
+        answer: `${val}`, kind: 'numeric'
+      };
+    }},
+  simultaneous: { name: 'Solve 2×2 linear (for x)', group: 'algebra', example: 'x+y=5, 2x−y=4',
+    generate() {
+      while (true) {
+        const a1 = pick([1,2,3]), b1 = pick([-2,-1,1,2,3]);
+        const a2 = pick([1,2,-1,3]), b2 = pick([-3,-2,-1,1,2,3]);
+        const det = a1*b2 - a2*b1;
+        if (det === 0) continue;
+        const x = rand(-5, 5), y = rand(-5, 5);
+        const c1 = a1*x + b1*y, c2 = a2*x + b2*y;
+        const ask = pick(['x', 'y']);
+        const a1s = a1 === 1 ? 'x' : (a1 === -1 ? '-x' : `${a1}x`);
+        const b1s = b1 === 1 ? '+y' : (b1 === -1 ? '-y' : signed(b1) + 'y');
+        const a2s = a2 === 1 ? 'x' : (a2 === -1 ? '-x' : `${a2}x`);
+        const b2s = b2 === 1 ? '+y' : (b2 === -1 ? '-y' : signed(b2) + 'y');
+        return {
+          display: `${a1s}${b1s}=${c1},\\;${a2s}${b2s}=${c2};\\;${ask}=?`,
+          answer: `${ask === 'x' ? x : y}`,
+          kind: 'numeric'
+        };
+      }
+    }},
+  quadInequalityBounds: { name: 'Quadratic ineq bounds', group: 'algebra', example: 'x²−5x+6<0 → 2,3',
+    generate() {
+      while (true) {
+        const r1 = pick([-7,-5,-4,-3,-2,-1,1,2,3,4,5,6,7]);
+        const r2 = pick([-7,-5,-4,-3,-2,-1,1,2,3,4,5,6,7]);
+        if (r1 === r2) continue;
+        const b = -(r1 + r2);
+        const c = r1 * r2;
+        const op = pick(['<', '>']);
+        const bStr = b === 0 ? '' : signed(b) + 'x';
+        const cStr = c === 0 ? '' : signed(c);
+        const sorted = [r1, r2].sort((x, y) => x - y);
+        return {
+          display: `x^{2}${bStr}${cStr} ${op} 0;\\;\\text{boundaries}`,
+          answer: `${sorted[0]},${sorted[1]}`,
+          alts: [`${sorted[1]},${sorted[0]}`],
+          kind: 'pair'
+        };
+      }
+    }},
+  modulusEqn: { name: 'Solve |ax+b|=c', group: 'algebra', example: '|2x−3|=7 → 5,−2',
+    generate() {
+      while (true) {
+        const a = pick([1, 2, 3]);
+        const b = pick([-5,-3,-1,1,3,5,7]);
+        const c = pick([2,3,4,5,6,7,8,9,10]);
+        const x1 = (-b + c) / a;
+        const x2 = (-b - c) / a;
+        if (!Number.isInteger(x1) || !Number.isInteger(x2)) continue;
+        const sorted = [x1, x2].sort((p,q) => p-q);
+        const aStr = a === 1 ? '' : `${a}`;
+        return {
+          display: `|${aStr}x${signed(b)}|=${c}`,
+          answer: `${sorted[0]},${sorted[1]}`,
+          alts: [`${sorted[1]},${sorted[0]}`],
+          kind: 'pair'
+        };
+      }
+    }},
+
+  // ============ INDICES & LOGS ============
+  indexLaws: { name: 'Index laws (combine)', group: 'idxlog', example: '2⁵ × 2³ = 256',
+    generate() {
+      const style = pick(['mul', 'div', 'pow']);
+      const base = pick([2, 3, 5]);
+      if (style === 'mul') {
+        const m = rand(2, 5), n = rand(2, 5);
+        return { display: `${base}^{${m}} \\times ${base}^{${n}}`, answer: `${Math.pow(base, m + n)}`, kind: 'numeric' };
+      } else if (style === 'div') {
+        const n = rand(2, 4), m = n + rand(1, 4);
+        return { display: `\\dfrac{${base}^{${m}}}{${base}^{${n}}}`, answer: `${Math.pow(base, m - n)}`, kind: 'numeric' };
+      } else {
+        const m = rand(2, 4), n = rand(2, 3);
+        return { display: `(${base}^{${m}})^{${n}}`, answer: `${Math.pow(base, m * n)}`, kind: 'numeric' };
+      }
+    }},
+  expSolve: { name: 'Solve aˣ = N', group: 'idxlog', example: '2ˣ = 8 → 3',
+    generate() {
+      const base = pick([2, 3, 5, 10]);
+      const x = rand(2, base === 10 ? 4 : 6);
+      const N = Math.pow(base, x);
+      return { display: `${base}^x = ${N}`, answer: `${x}`, kind: 'numeric' };
+    }},
+  evalLog: { name: 'Evaluate log', group: 'idxlog', example: 'log₂ 32 → 5',
+    generate() {
+      const base = pick([2, 3, 5, 10]);
+      const x = rand(1, base === 10 ? 4 : 6);
+      const N = Math.pow(base, x);
+      return { display: `\\log_{${base}}(${N})`, answer: `${x}`, kind: 'numeric' };
+    }},
+
+  // ============ TRIG ============
+  exactTrig: { name: 'Exact trig values', group: 'trig', example: 'sin(π/3)',
+    generate() {
+      const angles = [
+        { tex: '0', sin: '0', cos: '1', tan: '0' },
+        { tex: '\\frac{\\pi}{6}', sin: '1/2', cos: 'sqrt3/2', tan: 'sqrt3/3', tanAlts: ['1/sqrt3'] },
+        { tex: '\\frac{\\pi}{4}', sin: 'sqrt2/2', cos: 'sqrt2/2', tan: '1', sinAlts: ['1/sqrt2'], cosAlts: ['1/sqrt2'] },
+        { tex: '\\frac{\\pi}{3}', sin: 'sqrt3/2', cos: '1/2', tan: 'sqrt3' },
+        { tex: '\\frac{\\pi}{2}', sin: '1', cos: '0', tan: 'undefined', tanAlts: ['undef', 'inf', 'infinity', 'dne'] },
+        { tex: '\\frac{2\\pi}{3}', sin: 'sqrt3/2', cos: '-1/2', tan: '-sqrt3' },
+        { tex: '\\frac{3\\pi}{4}', sin: 'sqrt2/2', cos: '-sqrt2/2', tan: '-1' },
+        { tex: '\\frac{5\\pi}{6}', sin: '1/2', cos: '-sqrt3/2', tan: '-sqrt3/3' },
+        { tex: '\\pi', sin: '0', cos: '-1', tan: '0' },
+      ];
+      const a = pick(angles);
+      const fn = pick(['sin', 'cos', 'tan']);
+      const ans = a[fn];
+      const alts = a[fn + 'Alts'] || [];
+      return {
+        display: `\\${fn}\\left(${a.tex}\\right)`,
+        answer: ans, alts, kind: 'expr'
+      };
+    }},
+  doubleAngle: { name: 'Double angle (Pyth triple)', group: 'trig', example: 'sin x=3/5 → sin 2x = 24/25',
+    generate() {
+      const triples = [[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29]];
+      const [a, b, c] = pick(triples);
+      const fn = pick(['sin2x', 'cos2x']);
+      let num, den;
+      if (fn === 'sin2x') { num = 2 * a * b; den = c * c; }
+      else                { num = b*b - a*a; den = c * c; }
+      const ans = fracStr(num, den);
+      return {
+        display: `\\sin x = \\dfrac{${a}}{${c}}\\;(x\\text{ acute});\\;\\${fn === 'sin2x' ? 'sin' : 'cos'}(2x)=?`,
+        answer: ans, kind: 'fraction'
+      };
+    }},
+  pythagIdentity: { name: 'sin²+cos²=1 (find other)', group: 'trig', example: 'sin x=3/5 → cos x=4/5',
+    generate() {
+      const triples = [[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29]];
+      const [a, b, c] = pick(triples);
+      const given = pick(['sin', 'cos']);
+      const givenNum = given === 'sin' ? a : b;
+      const other = given === 'sin' ? 'cos' : 'sin';
+      const otherNum = given === 'sin' ? b : a;
+      return {
+        display: `\\${given} x = \\dfrac{${givenNum}}{${c}}\\;(x\\text{ acute});\\;\\${other} x=?`,
+        answer: `${otherNum}/${c}`,
+        kind: 'fraction'
+      };
+    }},
+  cosineRule: { name: 'Cosine rule c²', group: 'trig', example: 'a=2,b=3,C=60° → c²=7',
+    generate() {
+      const a = rand(2, 6), b = rand(2, 6);
+      const ang = pick([
+        { deg: 60, cosVal: 0.5 },
+        { deg: 120, cosVal: -0.5 },
+        { deg: 90, cosVal: 0 }
+      ]);
+      const cSq = a*a + b*b - 2*a*b*ang.cosVal;
+      return {
+        display: `a=${a},b=${b},C=${ang.deg}°;\\;c^2=?`,
+        answer: `${cSq}`, kind: 'numeric'
+      };
+    }},
+  triangleArea: { name: '½ab sin C area', group: 'trig', example: 'a=4,b=6,C=30° → 6',
+    generate() {
+      while (true) {
+        const a = rand(2, 10), b = rand(2, 10);
+        const choice = pick([
+          { deg: 30, ans: a*b/4 },
+          { deg: 90, ans: a*b/2 },
+          { deg: 150, ans: a*b/4 },
+          { deg: 60, ansEx: `${a*b}sqrt3/4`, isSurd: true },
+        ]);
+        if (choice.isSurd) {
+          // surd answer
+          const [n, d] = reduceFrac(a*b, 4);
+          let ansEx;
+          if (d === 1) ansEx = `${n}sqrt3`;
+          else ansEx = n === 1 ? `sqrt3/${d}` : `${n}sqrt3/${d}`;
+          return {
+            display: `a=${a},b=${b},C=${choice.deg}°;\\;\\text{Area}=?`,
+            answer: ansEx,
+            alts: [ansEx.replace('sqrt3', 'sqrt(3)'), ansEx.replace('sqrt3', '√3')],
+            kind: 'expr'
+          };
+        }
+        if (Number.isInteger(choice.ans)) {
+          return {
+            display: `a=${a},b=${b},C=${choice.deg}°;\\;\\text{Area}=?`,
+            answer: `${choice.ans}`, kind: 'numeric'
+          };
+        }
+      }
+    }},
+  countTrigSolns: { name: 'Count trig solutions', group: 'trig', example: 'sin 2x=½ in [0,2π)',
+    generate() {
+      const fn = pick(['sin', 'cos']);
+      const k = pick([1, 2, 3]);
+      const valTex = pick(['\\tfrac{1}{2}', '-\\tfrac{1}{2}', '\\tfrac{\\sqrt{3}}{2}', '\\tfrac{\\sqrt{2}}{2}', '-\\tfrac{\\sqrt{2}}{2}']);
+      const count = 2 * k;
+      const kStr = k === 1 ? 'x' : `${k}x`;
+      return {
+        display: `\\${fn}(${kStr}) = ${valTex},\\;x \\in [0,2\\pi);\\;\\#?`,
+        answer: `${count}`, kind: 'numeric'
+      };
+    }},
+  trigPeriodMax: { name: 'Period / max / min', group: 'trig', example: 'max(3+2cos x) = 5',
+    generate() {
+      const style = pick(['period', 'max', 'min']);
+      if (style === 'period') {
+        const k = pick([2, 3, 4, 5, 6]);
+        const fn = pick(['sin', 'cos']);
+        return {
+          display: `\\text{Period of }\\${fn}(${k}x)`,
+          answer: `2pi/${k}`,
+          alts: [`(2pi)/${k}`, `2π/${k}`, `2*pi/${k}`],
+          kind: 'expr'
+        };
+      } else {
+        const a = pick([2, 3, 4, 5]);
+        const b = pick([-3, -1, 0, 2, 4]);
+        const fn = pick(['sin', 'cos']);
+        const target = style === 'max' ? b + a : b - a;
+        const bStr = b === 0 ? '' : signed(b);
+        const pretty = style === 'max' ? 'Max' : 'Min';
+        return {
+          display: `\\text{${pretty} of }${a}\\${fn}(x)${bStr}`,
+          answer: `${target}`, kind: 'numeric'
+        };
+      }
+    }},
+
+  // ============ COORDINATE GEOMETRY ============
+  distance: { name: 'Distance (scaled triples)', group: 'coords', example: '(0,0)→(15,36) = 39',
+    generate() {
+      const triples = [[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29],[9,40,41]];
+      const [dx, dy, d] = pick(triples);
+      // Weight scaled cases more — the recognition is the skill
+      const k = pick([1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 17]);
+      const ndx = dx * k, ndy = dy * k, nd = d * k;
+      // Keep one endpoint near origin so the deltas are easy to read off
+      const x1 = pick([0, 0, 0, rand(-5, 5)]);
+      const y1 = pick([0, 0, 0, rand(-5, 5)]);
+      const sx = pick([1, -1]), sy = pick([1, -1]);
+      const x2 = x1 + sx * ndx, y2 = y1 + sy * ndy;
+      return {
+        display: `(${x1},${y1}) \\to (${x2},${y2})`,
+        answer: `${nd}`, kind: 'numeric'
+      };
+    }},
+  midpoint: { name: 'Midpoint', group: 'coords', example: '(2,3),(8,7) → (5,5)',
+    generate() {
+      const x1 = rand(-8, 8) * 2, y1 = rand(-8, 8) * 2;
+      const x2 = rand(-8, 8) * 2, y2 = rand(-8, 8) * 2;
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      return {
+        display: `\\text{Midpoint }(${x1},${y1}),(${x2},${y2})`,
+        answer: `${mx},${my}`,
+        alts: [`(${mx},${my})`],
+        kind: 'pair'
+      };
+    }},
+  perpGradient: { name: 'Perpendicular gradient', group: 'coords', example: 'perp y=3x+2 → −1/3',
+    generate() {
+      const m = pick([-9,-7,-5,-4,-3,-2,2,3,4,5,7,9]);
+      const c = rand(-5, 5);
+      const cStr = c === 0 ? '' : signed(c);
+      const num = -1, den = m;
+      const [n, d] = reduceFrac(num, den);
+      const ans = d === 1 ? `${n}` : `${n}/${d}`;
+      return {
+        display: `\\text{Perp gradient to }y=${m}x${cStr}`,
+        answer: ans,
+        alts: [`${-1/m}`],
+        kind: 'fraction'
+      };
+    }},
+  circleCentre: { name: 'Circle centre from eqn', group: 'coords', example: 'x²+y²−4x+6y−12=0',
+    generate() {
+      const h = rand(-5, 5), k = rand(-5, 5);
+      const r2 = rand(1, 50);
+      const D = -2*h, E = -2*k, F = h*h + k*k - r2;
+      const dStr = D === 0 ? '' : signed(D) + 'x';
+      const eStr = E === 0 ? '' : signed(E) + 'y';
+      const fStr = F === 0 ? '' : signed(F);
+      return {
+        display: `x^2+y^2${dStr}${eStr}${fStr}=0;\\;\\text{centre}`,
+        answer: `${h},${k}`,
+        alts: [`(${h},${k})`],
+        kind: 'pair'
+      };
+    }},
+
+  // ============ CALCULUS ============
+  differentiate: { name: "f'(x) at a point", group: 'calc', example: '3x²+2x at x=2 → 14',
+    generate() {
+      const a = pick([1, 2, 3, 4]);
+      const b = pick([-5,-3,-1,1,2,3,4,5,6]);
+      const c = pick([-10,-5,0,5,10]);
+      const x = pick([-2,-1,1,2,3,4]);
+      const fp = 2*a*x + b;
+      return {
+        display: `f(x)=${polyDisp([a, b, c])};\\;f'(${x})=?`,
+        answer: `${fp}`, kind: 'numeric'
+      };
+    }},
+  definiteIntegral: { name: 'Definite integral', group: 'calc', example: '∫₀² (3x+1) dx = 8',
+    generate() {
+      while (true) {
+        const a = pick([0, 0, 1, 2, 3]);
+        const b = pick([0, 1, 2, 3, 4, 5, -1, -2, -3]);
+        const c = pick([0, 1, 2, 3, -1, -2]);
+        if (a === 0 && b === 0 && c === 0) continue;
+        const hi = pick([1, 2, 3, 4, 6]);
+        const lo = 0;
+        const v1 = a*(hi*hi*hi - lo*lo*lo);
+        const v2 = b*(hi*hi - lo*lo);
+        const v3 = c*(hi - lo);
+        const num6 = 2*v1 + 3*v2 + 6*v3;
+        if (num6 % 6 !== 0) continue;
+        const ans = num6 / 6;
+        return {
+          display: `\\int_{${lo}}^{${hi}} (${polyDisp([a, b, c])})\\,dx`,
+          answer: `${ans}`, kind: 'numeric'
+        };
+      }
+    }},
+  stationaryPoint: { name: 'Stationary point x', group: 'calc', example: 'x²−6x+8 → x=3',
+    generate() {
+      while (true) {
+        const a = pick([1, 2, 3]);
+        const b = pick([-12,-10,-8,-6,-4,-2,2,4,6,8,10,12]);
+        if (b % (2*a) !== 0) continue;
+        const c = rand(-5, 5);
+        const x = -b / (2*a);
+        return {
+          display: `f(x)=${polyDisp([a, b, c])};\\;\\text{stationary }x=?`,
+          answer: `${x}`, kind: 'numeric'
+        };
+      }
+    }},
+
+  // ============ SEQUENCES ============
+  apSum: { name: 'AP sum S_n', group: 'sequences', example: 'a=3,d=4,n=10 → 210',
+    generate() {
+      const a = rand(1, 10);
+      const d = rand(1, 6) * pick([1, -1]);
+      const n = pick([5, 8, 10, 12, 15, 20]);
+      const sum = n * (2*a + (n-1)*d) / 2;
+      return {
+        display: `\\text{AP }a=${a},d=${signed(d)},n=${n};\\;S_n=?`,
+        answer: `${sum}`, kind: 'numeric'
+      };
+    }},
+  gpSumFinite: { name: 'GP sum S_n', group: 'sequences', example: 'a=2,r=3,n=5 → 242',
+    generate() {
+      const a = pick([1, 2, 3, 4, 5]);
+      const r = pick([2, 3, 4, 5]);
+      const n = pick([3, 4, 5, 6]);
+      const sum = a * (Math.pow(r, n) - 1) / (r - 1);
+      return {
+        display: `\\text{GP }a=${a},r=${r},n=${n};\\;S_n=?`,
+        answer: `${sum}`, kind: 'numeric'
+      };
+    }},
+  gpInfinity: { name: 'GP sum to infinity', group: 'sequences', example: 'a=8,r=½ → 16',
+    generate() {
+      while (true) {
+        const cases = [
+          { rN: 1, rD: 2 }, { rN: 1, rD: 3 }, { rN: 1, rD: 4 },
+          { rN: -1, rD: 2 }, { rN: -1, rD: 3 },
+          { rN: 2, rD: 3 }, { rN: 2, rD: 5 }, { rN: 3, rD: 5 },
+        ];
+        const c = pick(cases);
+        const a = rand(2, 30);
+        const denom = c.rD - c.rN;
+        const sNum = a * c.rD;
+        if (sNum % denom !== 0) continue;
+        const sum = sNum / denom;
+        if (sum <= 0 || sum > 200) continue;
+        const rStr = c.rN === 1 ? `\\tfrac{1}{${c.rD}}` :
+                     c.rN === -1 ? `-\\tfrac{1}{${c.rD}}` :
+                     `\\tfrac{${c.rN}}{${c.rD}}`;
+        return {
+          display: `\\text{GP }a=${a},r=${rStr};\\;S_{\\infty}=?`,
+          answer: `${sum}`, kind: 'numeric'
+        };
+      }
+    }},
+
+  // ============ FUNCTIONS ============
+  compose: { name: 'Compose f(g(x))', group: 'functions', example: 'f=2x+1,g=x², f(g(3))=19',
+    generate() {
+      const a = pick([1, 2, 3]);
+      const b = pick([-3,-1,1,2,3,4,5]);
+      const x = rand(1, 5);
+      const ans = a*x*x + b;
+      const aStr = a === 1 ? '' : `${a}`;
+      return {
+        display: `f(x)=${aStr}x${signed(b)},\\;g(x)=x^2;\\;f(g(${x}))=?`,
+        answer: `${ans}`, kind: 'numeric'
+      };
+    }},
+  modulusEval: { name: 'Evaluate |…|', group: 'functions', example: '|3−7|+|2|−|−5| = 1',
+    generate() {
+      const a = pick([3-7, 5-12, 2-9, 4-8, 1-6, 9-15]);
+      const b = pick([2, 3, 5, 8, -4, -7, -6]);
+      const c = pick([-3, -5, -8, -2, 6, 4]);
+      const ans = Math.abs(a) + Math.abs(b) - Math.abs(c);
+      return {
+        display: `|${a}|+|${b}|-|${c}|`,
+        answer: `${ans}`, kind: 'numeric'
+      };
+    }},
+
+  // ============ GEOMETRY ============
+  pythagoras: { name: 'Pythagoras (scaled triples)', group: 'geom', example: 'legs 15, 36 → 39',
+    generate() {
+      // Primitive triples — scaling applied below
+      const triples = [[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29],[9,40,41]];
+      const [a, b, c] = pick(triples);
+      // Sometimes randomly swap which leg is "the given one"
+      const givenLeg = Math.random() < 0.5 ? a : b;
+      const otherLeg = givenLeg === a ? b : a;
+      // Scale: integer 1..17, or fractional 1/k. Weight 1 (unscaled) lower so scaled cases dominate.
+      const scaleType = pick(['int','int','int','int','frac','frac','one']);
+      const ask = pick(['hyp', 'leg']);
+
+      if (scaleType === 'one') {
+        if (ask === 'hyp') {
+          return { display: `\\text{Legs }${a}, ${b};\\;\\text{hyp}=?`, answer: `${c}`, kind: 'numeric' };
+        }
+        return { display: `\\text{Hyp }${c},\\;\\text{leg }${givenLeg};\\;\\text{other leg}=?`, answer: `${otherLeg}`, kind: 'numeric' };
+      }
+      if (scaleType === 'int') {
+        const k = pick([2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 17]);
+        if (ask === 'hyp') {
+          return { display: `\\text{Legs }${a*k}, ${b*k};\\;\\text{hyp}=?`, answer: `${c*k}`, kind: 'numeric' };
+        }
+        return { display: `\\text{Hyp }${c*k},\\;\\text{leg }${givenLeg*k};\\;\\text{other leg}=?`, answer: `${otherLeg*k}`, kind: 'numeric' };
+      }
+      // Fractional scaling (1/k)
+      const k = pick([2, 3, 5, 7, 11, 13, 17]);
+      const aTeX = `\\tfrac{${a}}{${k}}`, bTeX = `\\tfrac{${b}}{${k}}`, cTeX = `\\tfrac{${c}}{${k}}`;
+      const givenLegTeX = `\\tfrac{${givenLeg}}{${k}}`;
+      if (ask === 'hyp') {
+        return { display: `\\text{Legs }${aTeX}, ${bTeX};\\;\\text{hyp}=?`, answer: `${c}/${k}`, kind: 'fraction' };
+      }
+      return { display: `\\text{Hyp }${cTeX},\\;\\text{leg }${givenLegTeX};\\;\\text{other leg}=?`, answer: `${otherLeg}/${k}`, kind: 'fraction' };
+    }},
+  circleArea: { name: 'Circle area / circumference', group: 'geom', example: 'r=4, A → 16π',
+    generate() {
+      const r = pick([2, 3, 4, 5, 6, 7, 10]);
+      const op = pick(['A', 'C']);
+      if (op === 'A') {
+        return {
+          display: `\\text{Area, }r=${r}`,
+          answer: `${r*r}pi`,
+          alts: [`${r*r}π`, `${r*r}*pi`, `pi*${r*r}`, `pi${r*r}`],
+          kind: 'expr'
+        };
+      } else {
+        return {
+          display: `\\text{Circumference, }r=${r}`,
+          answer: `${2*r}pi`,
+          alts: [`${2*r}π`, `${2*r}*pi`, `pi*${2*r}`, `pi${2*r}`],
+          kind: 'expr'
+        };
+      }
+    }},
+  polygonInteriorAngle: { name: 'Regular polygon int angle', group: 'geom', example: 'hexagon → 120°',
+    generate() {
+      const polys = [
+        { name: 'triangle', n: 3, ans: 60 },
+        { name: 'pentagon', n: 5, ans: 108 },
+        { name: 'hexagon', n: 6, ans: 120 },
+        { name: 'octagon', n: 8, ans: 135 },
+        { name: 'nonagon', n: 9, ans: 140 },
+        { name: 'decagon', n: 10, ans: 144 },
+        { name: 'dodecagon', n: 12, ans: 150 },
+      ];
+      const p = pick(polys);
+      return {
+        display: `\\text{Int angle, regular ${p.name}}`,
+        answer: `${p.ans}`, kind: 'numeric'
+      };
+    }},
+};
+
+//=========================================================
+// SKILL GROUPS (display order)
+//=========================================================
+const GROUPS = [
+  { key: 'arith',     label: 'Pure arithmetic',       items: ['add','sub','mul','div','fractions','percent'] },
+  { key: 'recall',    label: 'Recall',                items: ['squares','cubes','powers2','binomCoef'] },
+  { key: 'numtheory', label: 'Number theory',         items: ['smallPrimeFactor','hcfLcm','binaryToDecimal'] },
+  { key: 'surds',     label: 'Surds',                 items: ['simplifySurd','rationalise','expandSurdSq'] },
+  { key: 'algebra',   label: 'Algebra',               items: ['expandBinomial','factorRoots','completeSq','discriminant','substitute','simultaneous','quadInequalityBounds','modulusEqn'] },
+  { key: 'idxlog',    label: 'Indices & logs',        items: ['indexLaws','expSolve','evalLog'] },
+  { key: 'trig',      label: 'Trigonometry',          items: ['exactTrig','doubleAngle','pythagIdentity','cosineRule','triangleArea','countTrigSolns','trigPeriodMax'] },
+  { key: 'coords',    label: 'Coordinate geometry',   items: ['distance','midpoint','perpGradient','circleCentre'] },
+  { key: 'calc',      label: 'Calculus',              items: ['differentiate','definiteIntegral','stationaryPoint'] },
+  { key: 'sequences', label: 'Sequences',             items: ['apSum','gpSumFinite','gpInfinity'] },
+  { key: 'functions', label: 'Functions',             items: ['compose','modulusEval'] },
+  { key: 'geom',      label: 'Geometry formulas',     items: ['pythagoras','circleArea','polygonInteriorAngle'] },
+];
+
+//=========================================================
+// ANSWER NORMALISATION + CHECKING
+//=========================================================
+function normalize(s) {
+  return (s || '').toString().toLowerCase().trim()
+    .replace(/\s+/g, '')
+    .replace(/√/g, 'sqrt')
+    .replace(/π/g, 'pi')
+    .replace(/\*\*/g, '^')
+    .replace(/×/g, '*')
+    .replace(/÷/g, '/')
+    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1)/($2)')
+    .replace(/\\tfrac\{([^}]+)\}\{([^}]+)\}/g, '($1)/($2)');
+}
+function stripParens(s) { return s.replace(/[()]/g, ''); }
+function reorderAdditive(s) {
+  // Treat as sum of terms; sort terms after normalisation.
+  if (!s) return s;
+  let normed = s.startsWith('-') || s.startsWith('+') ? s : '+' + s;
+  const parts = normed.match(/[+-][^+-]+/g);
+  if (!parts || parts.length <= 1) return s;
+  return parts.sort().join('');
+}
+function asNumber(s) {
+  const n = normalize(s);
+  if (/^-?\d+(\.\d+)?$/.test(n)) return parseFloat(n);
+  const m = n.match(/^(-?\d+)\/(-?\d+)$/);
+  if (m) {
+    const num = parseInt(m[1]), den = parseInt(m[2]);
+    if (den === 0) return NaN;
+    return num / den;
+  }
+  return NaN;
+}
+function looselyEqualNumeric(a, b) {
+  const an = asNumber(a), bn = asNumber(b);
+  if (!isNaN(an) && !isNaN(bn)) return Math.abs(an - bn) < 1e-9;
+  return false;
+}
+function checkAnswer(userInput, q) {
+  if (!userInput) return false;
+  const candidates = [q.answer, ...(q.alts || [])];
+  const ui = normalize(userInput);
+
+  for (const c of candidates) {
+    if (normalize(c) === ui) return true;
+  }
+  if (q.kind === 'numeric' || q.kind === 'fraction') {
+    for (const c of candidates) {
+      if (looselyEqualNumeric(userInput, c)) return true;
+    }
+  }
+  if (q.kind === 'pair') {
+    const parts = ui.split(/[, ]+/).filter(Boolean);
+    if (parts.length === 2) {
+      for (const c of candidates) {
+        const cp = normalize(c).split(/[, ]+/).filter(Boolean);
+        if (cp.length === 2 && parts.slice().sort().join(',') === cp.slice().sort().join(',')) return true;
+      }
+    }
+  }
+  if (q.kind === 'expr') {
+    // 1) Strip parens, compare
+    for (const c of candidates) {
+      if (stripParens(normalize(c)) === stripParens(ui)) return true;
+    }
+    // 2) Term reorder (e.g. "21+4sqrt5" vs "4sqrt5+21")
+    const uiR = reorderAdditive(stripParens(ui));
+    for (const c of candidates) {
+      const cR = reorderAdditive(stripParens(normalize(c)));
+      if (uiR === cR) return true;
+    }
+  }
+  return false;
+}
+
+//=========================================================
+// UI POPULATION
+//=========================================================
+function populateSkills() {
+  const root = $('skillsContainer');
+  GROUPS.forEach(g => {
+    const fs = document.createElement('fieldset');
+    fs.innerHTML = `
+      <div class="group-row">
+        <legend>${g.label}</legend>
+        <span class="bulk" data-bulk="${g.key}">all / none</span>
+      </div>
+      <div class="skills" data-group="${g.key}"></div>
+    `;
+    root.appendChild(fs);
+    const cont = fs.querySelector('.skills');
+    g.items.forEach(key => {
+      const gen = GENERATORS[key];
+      if (!gen) return;
+      const lab = document.createElement('label');
+      lab.className = 'skill';
+      lab.innerHTML = `<input type="checkbox" data-group="${g.key}" data-key="${key}" checked> <span>${gen.name} <span class="ex">${gen.example}</span></span>`;
+      cont.appendChild(lab);
+    });
+  });
+}
+function selectedSkills() {
+  return [...$$('.skill input[type=checkbox]:checked')].map(el => el.dataset.key);
+}
+function bindBulk() {
+  $$('.bulk').forEach(span => {
+    span.addEventListener('click', () => {
+      const groupKey = span.dataset.bulk;
+      const boxes = [...$$(`input[data-group="${groupKey}"]`)];
+      const anyOn = boxes.some(b => b.checked);
+      boxes.forEach(b => b.checked = !anyOn);
+    });
+  });
+}
+function setSkills(keys) {
+  $$('.skill input[type=checkbox]').forEach(b => {
+    b.checked = keys.includes(b.dataset.key);
+  });
+}
+function bindPresets() {
+  $$('.small-link[data-preset]').forEach(el => {
+    el.addEventListener('click', () => applyPreset(el.dataset.preset));
+  });
+}
+function applyPreset(name) {
+  if (name === 'zetamac') {
+    setSkills(['add', 'sub', 'mul', 'div']);
+    $('duration').value = 120;
+  } else if (name === 'tier1') {
+    setSkills([
+      'mul','div','fractions','percent',
+      'squares','cubes','powers2','binomCoef',
+      'simplifySurd','rationalise',
+      'exactTrig','pythagIdentity','doubleAngle',
+      'expandBinomial','factorRoots','completeSq','substitute','discriminant','quadInequalityBounds','modulusEqn',
+      'indexLaws','evalLog','expSolve'
+    ]);
+    $('duration').value = 180;
+  } else if (name === 'tier2') {
+    setSkills([
+      'mul','div','fractions','percent',
+      'squares','cubes','powers2','binomCoef',
+      'simplifySurd','rationalise','expandSurdSq',
+      'exactTrig','pythagIdentity','doubleAngle','triangleArea','cosineRule','countTrigSolns','trigPeriodMax',
+      'expandBinomial','factorRoots','completeSq','substitute','discriminant','simultaneous','quadInequalityBounds','modulusEqn',
+      'indexLaws','evalLog','expSolve',
+      'distance','midpoint','perpGradient','circleCentre',
+      'differentiate','definiteIntegral','stationaryPoint',
+      'apSum','gpSumFinite','gpInfinity',
+      'compose','modulusEval',
+      'pythagoras','circleArea','polygonInteriorAngle',
+      'smallPrimeFactor','hcfLcm'
+    ]);
+    $('duration').value = 240;
+  } else if (name === 'all') {
+    setSkills(Object.keys(GENERATORS));
+    $('duration').value = 300;
+  }
+}
+
+//=========================================================
+// GAME STATE
+//=========================================================
+const state = {
+  duration: 120, pool: [], current: null,
+  score: 0, right: 0, wrong: 0,
+  history: [], timerId: null, endsAt: 0,
+};
+
+function renderTeX(target, latex) {
+  if (window.katex) katex.render(latex, target, { throwOnError: false, displayMode: false });
+  else target.textContent = latex;
+}
+
+function nextQuestion() {
+  const key = pick(state.pool);
+  const q = GENERATORS[key].generate();
+  q.key = key;
+  state.current = q;
+  renderTeX($('question'), q.display);
+  $('answer').value = '';
+  $('preview').textContent = '';
+  $('answer').focus();
+}
+
+function flashElement(el, cls) {
+  el.classList.remove('flash-good', 'flash-bad');
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
+function submitAnswer(forceWrong) {
+  if (!state.current) return;
+  const val = $('answer').value;
+  const correct = !forceWrong && checkAnswer(val, state.current);
+  state.history.push({
+    key: state.current.key,
+    display: state.current.display,
+    answer: state.current.answer,
+    user: val, correct
+  });
+  if (correct) {
+    state.score++; state.right++;
+    flashElement($('question'), 'flash-good');
+  } else {
+    state.wrong++;
+    flashElement($('question'), 'flash-bad');
+  }
+  $('score').textContent = state.score;
+  $('rightCount').textContent = state.right;
+  $('wrongCount').textContent = state.wrong;
+  nextQuestion();
+}
+
+function startGame() {
+  const skills = selectedSkills();
+  if (skills.length === 0) { alert('Pick at least one skill.'); return; }
+  state.pool = skills;
+  state.duration = Math.max(20, Math.min(900, parseInt($('duration').value) || 120));
+  state.score = 0; state.right = 0; state.wrong = 0; state.history = [];
+  state.endsAt = Date.now() + state.duration * 1000;
+  $('score').textContent = '0';
+  $('rightCount').textContent = '0';
+  $('wrongCount').textContent = '0';
+  $('setup').classList.add('hidden');
+  $('results').classList.add('hidden');
+  $('game').classList.remove('hidden');
+  updateTimer();
+  state.timerId = setInterval(updateTimer, 100);
+  nextQuestion();
+}
+
+function updateTimer() {
+  const remMs = state.endsAt - Date.now();
+  if (remMs <= 0) { endGame(); return; }
+  const sec = Math.ceil(remMs / 1000);
+  const m = Math.floor(sec / 60), s = sec % 60;
+  $('timer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function endGame() {
+  clearInterval(state.timerId);
+  // Capture the on-screen question (time ran out before submit) so user can see its answer
+  if (state.current) {
+    state.history.push({
+      key: state.current.key,
+      display: state.current.display,
+      answer: state.current.answer,
+      user: $('answer').value,
+      correct: false,
+      timedOut: true
+    });
+  }
+  state.current = null;
+  $('game').classList.add('hidden');
+  $('results').classList.remove('hidden');
+  $('finalScore').textContent = state.score;
+  $('finalTotal').textContent = state.right + state.wrong;
+  const total = state.right + state.wrong;
+  const acc = total ? Math.round(state.right * 100 / total) : 0;
+  $('accuracy').textContent = `${acc}% accuracy · ${(state.score / state.duration * 60).toFixed(1)} per minute`;
+
+  const tally = {};
+  state.history.forEach(h => {
+    if (!tally[h.key]) tally[h.key] = { right: 0, total: 0 };
+    tally[h.key].total++;
+    if (h.correct) tally[h.key].right++;
+  });
+  let html = '<table>';
+  Object.keys(tally).forEach(k => {
+    const t = tally[k];
+    html += `<tr><td>${GENERATORS[k].name}</td><td>${t.right} / ${t.total}</td></tr>`;
+  });
+  html += '</table>';
+  $('breakdown').innerHTML = html;
+
+  const recap = state.history.slice().reverse();
+  let r = '';
+  recap.forEach(h => {
+    const mark = h.timedOut ? '⌛' : (h.correct ? '✓' : '✗');
+    const markCls = h.correct ? 'good' : 'bad';
+    const yoursCls = h.correct ? '' : 'bad';
+    r += `<div class="recap-item">
+      <span class="mark ${markCls}">${mark}</span>
+      <span class="q-cell"></span>
+      <span class="yours ${yoursCls}">${(h.user || '—').replace(/</g,'&lt;')}${!h.correct ? ` <span style="color:var(--muted)">(was ${h.answer.replace(/</g,'&lt;')})</span>` : ''}</span>
+    </div>`;
+  });
+  $('recap').innerHTML = r;
+  [...$$('#recap .q-cell')].forEach((cell, i) => {
+    renderTeX(cell, recap[i].display);
+  });
+}
+
+//=========================================================
+// INPUT HANDLING
+//=========================================================
+function insertAtCursor(el, text) {
+  const start = el.selectionStart, end = el.selectionEnd;
+  el.value = el.value.slice(0, start) + text + el.value.slice(end);
+  el.selectionStart = el.selectionEnd = start + text.length;
+}
+
+function bindInput() {
+  const inp = $('answer');
+  inp.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); submitAnswer(false); return; }
+    if (e.key === 'Tab')   { e.preventDefault(); submitAnswer(true);  return; }
+    if (e.shiftKey && (e.key === 'S' || e.key === 's')) {
+      e.preventDefault(); insertAtCursor(inp, '√'); updatePreview(); return;
+    }
+    if (e.shiftKey && (e.key === 'P' || e.key === 'p')) {
+      e.preventDefault(); insertAtCursor(inp, 'π'); updatePreview(); return;
+    }
+  });
+  inp.addEventListener('input', updatePreview);
+}
+
+function updatePreview() {
+  const v = $('answer').value;
+  if (!v) { $('preview').textContent = ''; return; }
+  renderTeX($('preview'), inputToTeX(v));
+}
+
+function inputToTeX(s) {
+  let t = s;
+  t = t.replace(/√\s*\(([^)]+)\)/g, '\\sqrt{$1}');
+  t = t.replace(/√\s*([a-z0-9]+)/gi, '\\sqrt{$1}');
+  t = t.replace(/sqrt\s*\(([^)]+)\)/gi, '\\sqrt{$1}');
+  t = t.replace(/sqrt\s*([a-z0-9]+)/gi, '\\sqrt{$1}');
+  t = t.replace(/π/g, '\\pi ');
+  t = t.replace(/\bpi\b/g, '\\pi ');
+  t = t.replace(/(\d+(?:\\sqrt\{[^}]+\})?)\/(\d+(?:\\sqrt\{[^}]+\})?)/g, '\\frac{$1}{$2}');
+  t = t.replace(/\^(\w+)/g, '^{$1}');
+  return t;
+}
+
+//=========================================================
+// INIT
+//=========================================================
+populateSkills();
+bindBulk();
+bindInput();
+bindPresets();
+$('startBtn').addEventListener('click', startGame);
+$('skipBtn').addEventListener('click', () => submitAnswer(true));
+$('againBtn').addEventListener('click', startGame);
+$('backBtn').addEventListener('click', () => {
+  $('results').classList.add('hidden');
+  $('setup').classList.remove('hidden');
+});
+</script>
+</body>
+</html>
