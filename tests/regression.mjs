@@ -152,12 +152,15 @@ const checks = {
     app.includes('seed: state.current.seed'),
   noImmediateFreshRepeatGuardPresent:
     app.includes('lastQuestionSignature') &&
+    app.includes('recentQuestionSignatures') &&
+    app.includes('function rememberQuestionSignature') &&
     app.includes('function questionSignature') &&
-    app.includes('attempt < 8') &&
-    app.includes('spec.replay || questionSignature(q) !== state.lastQuestionSignature'),
+    app.includes('attempt < 24') &&
+    app.includes('!state.recentQuestionSignatures.includes(sig)'),
   sourceBackedGeneratorAddsPresent:
     ['remainderTheorem', 'lineEquation', 'trapeziumRule', 'recurrenceTerm', 'arcSector',
-     'necessarySufficient', 'converseContrapositive', 'quantifierNegation', 'counterexamplePattern']
+     'necessarySufficient', 'conditionalForms', 'converseContrapositive', 'compoundContrapositive',
+     'andOrNegation', 'quantifierNegation', 'counterexamplePattern', 'proofErrorSpotting']
       .every(key => !!ctx.GENERATORS[key]),
   everyGeneratorAppearsOnceInGroups: (() => {
     const listed = ctx.GROUPS.flatMap(g => g.items);
@@ -170,7 +173,7 @@ const checks = {
     ctx.checkAnswer('sufficient', { answer: 'sufficient', alts: ['suff'], kind: 'expr', exactOnly: true }) &&
     ctx.checkAnswer('a', { answer: 'A', kind: 'expr', exactOnly: true }),
   logicChoicesAreStructured: (() => {
-    const logicKeys = ['necessarySufficient', 'converseContrapositive', 'quantifierNegation', 'counterexamplePattern'];
+    const logicKeys = ctx.GROUPS.find(g => g.key === 'logic').items;
     for (const key of logicKeys) {
       for (let i = 0; i < 25; i++) {
         const q = ctx.withSeededRandom(`${key}-choice-shape-${i}`, () => ctx.GENERATORS[key].generate());
@@ -181,6 +184,12 @@ const checks = {
     }
     return html.includes('.logic-choice') && html.includes('function renderQuestion');
   })(),
+  richerLogicPromptsPresent:
+    app.includes('Which means the same as "A only if B"?') &&
+    app.includes('Contrapositive: if a and b are odd, then ab is odd.') &&
+    app.includes('Negate: A and B.') &&
+    app.includes('To disprove "A iff B", a counterexample has') &&
+    app.includes('A proof divides both sides by x. What must be checked?'),
   progressExportImportControlsPresent:
     html.includes('id="exportJsonBtn"') &&
     html.includes('id="exportCsvBtn"') &&

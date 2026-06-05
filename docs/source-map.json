@@ -500,11 +500,35 @@
       ]
     },
     {
+      "generatorKey": "conditionalForms",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Section 2 Arg1-Arg2", "ref": "Statements of the form if A then B, A if B, A only if B, A if and only if B; necessary and sufficient." },
+        { "sourceId": "logic-notes-2021", "section": "Arg1-Arg2", "ref": "The Notes explain how if, only if, iff, necessary, and sufficient translate into implication directions." }
+      ]
+    },
+    {
       "generatorKey": "converseContrapositive",
       "claimLevel": "official-direct",
       "sourceRefs": [
         { "sourceId": "spec-2021", "section": "Section 2 Arg1", "ref": "The converse and contrapositive of a statement; relationship between a statement and its converse/contrapositive." },
         { "sourceId": "logic-notes-2021", "section": "Arg1", "ref": "Converse and contrapositive of if A then B." }
+      ]
+    },
+    {
+      "generatorKey": "compoundContrapositive",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Section 2 Arg1 and Arg4", "ref": "Contrapositive of a statement and negation of statements using and/or/not." },
+        { "sourceId": "logic-notes-2021", "section": "Arg1 Contrapositive / Arg4 Negation", "ref": "The Notes warn that the contrapositive of a compound antecedent requires negating A and B correctly, for example not(A and B) becomes not A or not B." }
+      ]
+    },
+    {
+      "generatorKey": "andOrNegation",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Section 2 Arg1 and Arg4", "ref": "Use and, or, not; negate statements using these terms." },
+        { "sourceId": "logic-notes-2021", "section": "Arg4", "ref": "Negating compound statements, including not(A and B) and not(A or B)." }
       ]
     },
     {
@@ -519,8 +543,16 @@
       "generatorKey": "counterexamplePattern",
       "claimLevel": "official-direct",
       "sourceRefs": [
-        { "sourceId": "spec-2021", "section": "Section 2 Prf1", "ref": "Disproof by counterexample." },
-        { "sourceId": "logic-notes-2021", "section": "Prf1", "ref": "A counterexample to if A then B is an example where A is true and B is false." }
+        { "sourceId": "spec-2021", "section": "Section 2 Prf1 and Arg1", "ref": "Disproof by counterexample; statements involving and, or, only if, and iff." },
+        { "sourceId": "logic-notes-2021", "section": "Prf1 Disproof by counterexample", "ref": "A counterexample to if A then B is an example where A is true and B is false; Exercise P asks for counterexample forms for A and B, A or B, A only if B, and A iff B." }
+      ]
+    },
+    {
+      "generatorKey": "proofErrorSpotting",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Section 2 Err1-Err2", "ref": "Identifying errors in purported proofs and common invalid deductions." },
+        { "sourceId": "logic-notes-2021", "section": "Err1-Err2", "ref": "Common proof errors include invalid cancellation/division, extra roots from squaring, and assuming sin A = sin B implies A = B." }
       ]
     }
   ],

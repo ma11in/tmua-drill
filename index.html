@@ -1488,6 +1488,52 @@ const GENERATORS = {
         alts: c.alts
       });
     }},
+  conditionalForms: { name: 'If / only if / iff', group: 'logic', example: 'A only if B → if A then B',
+    generate() {
+      const c = pick([
+        {
+          prompt: '\\text{Which means the same as "A only if B"?}',
+          promptText: 'Which means the same as "A only if B"?',
+          choices: [
+            { key: 'A', text: 'if A then B' },
+            { key: 'B', text: 'if B then A' },
+            { key: 'C', text: 'A and B' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{Which means the same as "A if B"?}',
+          promptText: 'Which means the same as "A if B"?',
+          choices: [
+            { key: 'A', text: 'if A then B' },
+            { key: 'B', text: 'if B then A' },
+            { key: 'C', text: 'if not A then not B' }
+          ],
+          answer: 'B'
+        },
+        {
+          prompt: '\\text{Which means the same as "A iff B"?}',
+          promptText: 'Which means the same as "A iff B"?',
+          choices: [
+            { key: 'A', text: 'if A then B only' },
+            { key: 'B', text: 'if B then A only' },
+            { key: 'C', text: 'if A then B and if B then A' }
+          ],
+          answer: 'C'
+        },
+        {
+          prompt: '\\text{If A is necessary for B, which implication is true?}',
+          promptText: 'If A is necessary for B, which implication is true?',
+          choices: [
+            { key: 'A', text: 'if A then B' },
+            { key: 'B', text: 'if B then A' },
+            { key: 'C', text: 'if not A then B' }
+          ],
+          answer: 'B'
+        }
+      ]);
+      return logicChoiceQuestion({ ...c, hint: 'type A/B/C' });
+    }},
   converseContrapositive: { name: 'Converse / contrapositive', group: 'logic', example: 'If A then B → if not B then not A',
     generate() {
       const c = pick([
@@ -1525,6 +1571,98 @@ const GENERATORS = {
       ]);
       return logicChoiceQuestion({ ...c, hint: 'type A/B/C', alts: c.alts || [] });
     }},
+  compoundContrapositive: { name: 'Compound contrapositive', group: 'logic', example: 'if A and B then C → if not C then not A or not B',
+    generate() {
+      const c = pick([
+        {
+          prompt: '\\text{Contrapositive: if A and B then C.}',
+          promptText: 'Contrapositive: if A and B then C.',
+          choices: [
+            { key: 'A', text: 'if not C then not A or not B' },
+            { key: 'B', text: 'if not C then not A and not B' },
+            { key: 'C', text: 'if C then A and B' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{Contrapositive: if a and b are odd, then ab is odd.}',
+          promptText: 'Contrapositive: if a and b are odd, then ab is odd.',
+          choices: [
+            { key: 'A', text: 'if ab is even, then a and b are even' },
+            { key: 'B', text: 'if ab is even, then at least one of a,b is even' },
+            { key: 'C', text: 'if ab is odd, then a and b are odd' }
+          ],
+          answer: 'B'
+        },
+        {
+          prompt: '\\text{Contrapositive: if x squared < 4 then x < 2.}',
+          promptText: 'Contrapositive: if x squared < 4 then x < 2.',
+          choices: [
+            { key: 'A', text: 'if x >= 2 then x squared >= 4' },
+            { key: 'B', text: 'if x < 2 then x squared < 4' },
+            { key: 'C', text: 'if x squared >= 4 then x >= 2' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{Contrapositive: if A or B then C.}',
+          promptText: 'Contrapositive: if A or B then C.',
+          choices: [
+            { key: 'A', text: 'if not C then not A and not B' },
+            { key: 'B', text: 'if not C then not A or not B' },
+            { key: 'C', text: 'if C then A or B' }
+          ],
+          answer: 'A'
+        }
+      ]);
+      return logicChoiceQuestion({ ...c, hint: 'type A/B/C' });
+    }},
+  andOrNegation: { name: 'And / or negation', group: 'logic', example: 'not(A and B) → not A or not B',
+    generate() {
+      const c = pick([
+        {
+          prompt: '\\text{Negate: A and B.}',
+          promptText: 'Negate: A and B.',
+          choices: [
+            { key: 'A', text: 'not A and not B' },
+            { key: 'B', text: 'not A or not B' },
+            { key: 'C', text: 'A or B' }
+          ],
+          answer: 'B'
+        },
+        {
+          prompt: '\\text{Negate: A or B.}',
+          promptText: 'Negate: A or B.',
+          choices: [
+            { key: 'A', text: 'not A and not B' },
+            { key: 'B', text: 'not A or not B' },
+            { key: 'C', text: 'A and B' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{Negate: A only if B.}',
+          promptText: 'Negate: A only if B.',
+          choices: [
+            { key: 'A', text: 'A true and B false' },
+            { key: 'B', text: 'A false and B true' },
+            { key: 'C', text: 'not A only if not B' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{Negate: A iff B.}',
+          promptText: 'Negate: A iff B.',
+          choices: [
+            { key: 'A', text: 'A and B have the same truth value' },
+            { key: 'B', text: 'A and B have different truth values' },
+            { key: 'C', text: 'not A iff not B' }
+          ],
+          answer: 'B'
+        }
+      ]);
+      return logicChoiceQuestion({ ...c, hint: 'type A/B/C' });
+    }},
   quantifierNegation: { name: 'Quantifier negation', group: 'logic', example: 'not(for all) → exists not',
     generate() {
       const c = pick([
@@ -1555,8 +1693,18 @@ const GENERATORS = {
           ],
           answer: 'A'
         },
+        {
+          prompt: '\\text{Negate: for some x, P(x) and Q(x).}',
+          promptText: 'Negate: for some x, P(x) and Q(x).',
+          choices: [
+            { key: 'A', text: 'for all x, not P(x) and not Q(x)' },
+            { key: 'B', text: 'for all x, not P(x) or not Q(x)' },
+            { key: 'C', text: 'there exists x with not P(x) or not Q(x)' }
+          ],
+          answer: 'B'
+        },
       ]);
-      return logicChoiceQuestion({ ...c, hint: 'type A/B' });
+      return logicChoiceQuestion({ ...c, hint: c.choices.length === 2 ? 'type A/B' : 'type A/B/C' });
     }},
   counterexamplePattern: { name: 'Counterexample pattern', group: 'logic', example: 'if P then Q: P true, Q false',
     generate() {
@@ -1582,6 +1730,56 @@ const GENERATORS = {
           answer: 'A'
         },
         {
+          prompt: '\\text{To disprove "A and B", a counterexample has}',
+          promptText: 'To disprove "A and B", a counterexample has',
+          choices: [
+            { key: 'A', text: 'A false or B false' },
+            { key: 'B', text: 'A true and B true' },
+            { key: 'C', text: 'A true or B true' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{To disprove "A or B", a counterexample has}',
+          promptText: 'To disprove "A or B", a counterexample has',
+          choices: [
+            { key: 'A', text: 'A false and B false' },
+            { key: 'B', text: 'A false or B false' },
+            { key: 'C', text: 'A true and B false' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{To disprove "A only if B", a counterexample has}',
+          promptText: 'To disprove "A only if B", a counterexample has',
+          choices: [
+            { key: 'A', text: 'A true, B false' },
+            { key: 'B', text: 'A false, B true' },
+            { key: 'C', text: 'A true, B true' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{To disprove "A iff B", a counterexample has}',
+          promptText: 'To disprove "A iff B", a counterexample has',
+          choices: [
+            { key: 'A', text: 'A and B have different truth values' },
+            { key: 'B', text: 'A and B are both true' },
+            { key: 'C', text: 'A and B are both false' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{To disprove "all primes are odd", which value works?}',
+          promptText: 'To disprove "all primes are odd", which value works?',
+          choices: [
+            { key: 'A', text: '2' },
+            { key: 'B', text: '3' },
+            { key: 'C', text: '9' }
+          ],
+          answer: 'A'
+        },
+        {
           prompt: '\\text{An attempted proof squares both sides. What must be checked?}',
           promptText: 'An attempted proof squares both sides. What must be checked?',
           choices: [
@@ -1591,6 +1789,52 @@ const GENERATORS = {
           ],
           answer: 'A'
         },
+      ]);
+      return logicChoiceQuestion({ ...c, hint: 'type A/B/C' });
+    }},
+  proofErrorSpotting: { name: 'Proof error spotting', group: 'logic', example: 'divide by x → check x is not 0',
+    generate() {
+      const c = pick([
+        {
+          prompt: '\\text{A proof divides both sides by x. What must be checked?}',
+          promptText: 'A proof divides both sides by x. What must be checked?',
+          choices: [
+            { key: 'A', text: 'x is not 0' },
+            { key: 'B', text: 'x is positive' },
+            { key: 'C', text: 'x is an integer' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{A proof says sin A = sin B, so A = B. What is the issue?}',
+          promptText: 'A proof says sin A = sin B, so A = B. What is the issue?',
+          choices: [
+            { key: 'A', text: 'same sine does not force same angle' },
+            { key: 'B', text: 'sine is never negative' },
+            { key: 'C', text: 'angles cannot be equal' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{A proof cancels a from ab = ac. What must be checked?}',
+          promptText: 'A proof cancels a from ab = ac. What must be checked?',
+          choices: [
+            { key: 'A', text: 'a is not 0' },
+            { key: 'B', text: 'b = c already' },
+            { key: 'C', text: 'a is positive' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{A proof checks n = 1,2,3 and concludes all n. What is missing?}',
+          promptText: 'A proof checks n = 1,2,3 and concludes all n. What is missing?',
+          choices: [
+            { key: 'A', text: 'a general argument' },
+            { key: 'B', text: 'decimal approximations' },
+            { key: 'C', text: 'a diagram' }
+          ],
+          answer: 'A'
+        }
       ]);
       return logicChoiceQuestion({ ...c, hint: 'type A/B/C' });
     }},
@@ -1612,7 +1856,7 @@ const GROUPS = [
   { key: 'sequences', label: 'Sequences',             items: ['apSum','recurrenceTerm','gpSumFinite','gpInfinity'] },
   { key: 'functions', label: 'Functions',             items: ['compose','modulusEval'] },
   { key: 'geom',      label: 'Geometry formulas',     items: ['pythagoras','circleArea','arcSector','polygonInteriorAngle','diamondArea'] },
-  { key: 'logic',     label: 'Logic & proof fluency', items: ['necessarySufficient','converseContrapositive','quantifierNegation','counterexamplePattern'] },
+  { key: 'logic',     label: 'Logic & proof fluency', items: ['necessarySufficient','conditionalForms','converseContrapositive','compoundContrapositive','andOrNegation','quantifierNegation','counterexamplePattern','proofErrorSpotting'] },
 ];
 
 //=========================================================
@@ -1835,7 +2079,7 @@ function applyPreset(name) {
       'compose','modulusEval',
       'pythagoras','circleArea','arcSector','polygonInteriorAngle','diamondArea',
       'smallPrimeFactor','hcfLcm',
-      'necessarySufficient','converseContrapositive','quantifierNegation','counterexamplePattern'
+      'necessarySufficient','conditionalForms','converseContrapositive','compoundContrapositive','andOrNegation','quantifierNegation','counterexamplePattern','proofErrorSpotting'
     ]);
     $('duration').value = 240;
   } else if (name === 'all') {
@@ -1856,6 +2100,7 @@ const state = {
   history: [], timerId: null, endsAt: 0,
   questionStartedAt: 0,
   lastQuestionSignature: '',
+  recentQuestionSignatures: [],
 };
 
 function nowMs() {
@@ -1889,8 +2134,10 @@ const TARGET_MS = {
   remainderTheorem: 6500, lineEquation: 5500,
   definiteIntegral: 8500, trapeziumRule: 8000, stationaryPoint: 8500,
   recurrenceTerm: 8000, arcSector: 5500,
-  necessarySufficient: 6000, converseContrapositive: 6500,
-  quantifierNegation: 7000, counterexamplePattern: 6000
+  necessarySufficient: 6000, conditionalForms: 6500,
+  converseContrapositive: 6500, compoundContrapositive: 8500,
+  andOrNegation: 6500, quantifierNegation: 7000,
+  counterexamplePattern: 6500, proofErrorSpotting: 6500
 };
 function targetMsForSkill(key) {
   if (TARGET_MS[key]) return TARGET_MS[key];
@@ -1966,6 +2213,13 @@ function questionSignature(q) {
   return normalize(`${q.key}|${q.promptText || q.display}|${q.answer}`);
 }
 
+function rememberQuestionSignature(sig) {
+  if (!sig) return;
+  state.lastQuestionSignature = sig;
+  const recent = Array.isArray(state.recentQuestionSignatures) ? state.recentQuestionSignatures : [];
+  state.recentQuestionSignatures = [sig, ...recent.filter(item => item !== sig)].slice(0, 6);
+}
+
 function renderTeX(target, latex) {
   if (window.katex) katex.render(latex, target, { throwOnError: false, displayMode: false });
   else target.textContent = latex;
@@ -2032,14 +2286,29 @@ function setAnswerStatus(text) {
 function nextQuestion() {
   let spec;
   let q;
-  for (let attempt = 0; attempt < 8; attempt++) {
+  let sig = '';
+  let fallback = null;
+  let fallbackSpec = null;
+  let fallbackSig = '';
+  for (let attempt = 0; attempt < 24; attempt++) {
     spec = chooseQuestionSpec();
     q = generateQuestion(spec.key, spec.seed);
-    if (spec.replay || questionSignature(q) !== state.lastQuestionSignature) break;
+    sig = questionSignature(q);
+    if (!fallback || (!spec.replay && sig !== state.lastQuestionSignature)) {
+      fallback = q;
+      fallbackSpec = spec;
+      fallbackSig = sig;
+    }
+    if (spec.replay || !state.recentQuestionSignatures.includes(sig)) break;
+  }
+  if (state.recentQuestionSignatures.includes(sig) && fallback) {
+    q = fallback;
+    spec = fallbackSpec;
+    sig = fallbackSig;
   }
   q.replay = spec.replay;
   state.current = q;
-  state.lastQuestionSignature = questionSignature(q);
+  rememberQuestionSignature(sig);
   state.questionStartedAt = nowMs();
   renderQuestion($('question'), q);
   $('answer').value = '';
@@ -2101,6 +2370,7 @@ function startGame() {
   state.duration = Math.max(20, Math.min(900, parseInt($('duration').value) || 120));
   state.score = 0; state.right = 0; state.wrong = 0; state.history = [];
   state.lastQuestionSignature = '';
+  state.recentQuestionSignatures = [];
   state.endsAt = Date.now() + state.duration * 1000;
   $('score').textContent = '0';
   $('rightCount').textContent = '0';
