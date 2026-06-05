@@ -250,7 +250,7 @@
     <div class="presets">
       <button type="button" class="small-link link-button" data-preset="zetamac">Zetamac classic</button>
       <button type="button" class="small-link link-button" data-preset="tier1">TMUA Tier 1 (arith + recall + surds + trig + algebra)</button>
-      <button type="button" class="small-link link-button" data-preset="tier2">+ Tier 2 (calc + sequences + coords)</button>
+      <button type="button" class="small-link link-button" data-preset="tier2">+ Tier 2 (coords + calc + sequences + logic)</button>
       <button type="button" class="small-link link-button" data-preset="all">Everything</button>
     </div>
     <div class="start-row">
@@ -2091,6 +2091,7 @@ function applyPreset(name) {
 //=========================================================
 // GAME STATE
 //=========================================================
+const GENERATOR_VERSION = 3;
 const state = {
   duration: 120, pool: [], current: null,
   score: 0, right: 0, wrong: 0,
@@ -2186,7 +2187,15 @@ function buildReviewQueue(hist, pool) {
   const items = [];
   hist.slice().reverse().forEach(session => {
     (session.misses || []).slice().reverse().forEach(m => {
-      if (allowed.has(m.key) && m.seed) items.push({ key: m.key, seed: m.seed });
+      if (allowed.has(m.key) && m.seed && m.signature && m.answer) {
+        items.push({
+          key: m.key,
+          seed: m.seed,
+          generatorVersion: m.generatorVersion || 1,
+          signature: m.signature,
+          answer: m.answer
+        });
+      }
     });
   });
   return items.slice(0, 40);
@@ -2195,7 +2204,14 @@ function buildReviewQueue(hist, pool) {
 function chooseQuestionSpec() {
   if (state.mode === 'misses' && state.reviewQueue.length) {
     const item = state.reviewQueue.shift();
-    return { key: item.key, seed: item.seed, replay: true };
+    return {
+      key: item.key,
+      seed: item.seed,
+      replay: true,
+      generatorVersion: item.generatorVersion,
+      signature: item.signature,
+      answer: item.answer
+    };
   }
   const key = chooseQuestionKey();
   return { key, seed: makeSeed(key), replay: false };
@@ -2205,12 +2221,21 @@ function generateQuestion(key, seed) {
   const q = withSeededRandom(seed, () => GENERATORS[key].generate());
   q.key = key;
   q.seed = seed;
+  q.generatorVersion = GENERATOR_VERSION;
   return q;
 }
 
 function questionSignature(q) {
   if (!q) return '';
   return normalize(`${q.key}|${q.promptText || q.display}|${q.answer}`);
+}
+
+function replaySpecMatchesQuestion(spec, q, sig) {
+  if (!spec || !spec.replay) return true;
+  if (!q || !sig) return false;
+  if (spec.signature && spec.signature !== sig) return false;
+  if (spec.answer && String(spec.answer) !== String(q.answer)) return false;
+  return true;
 }
 
 function rememberQuestionSignature(sig) {
@@ -2294,6 +2319,7 @@ function nextQuestion() {
     spec = chooseQuestionSpec();
     q = generateQuestion(spec.key, spec.seed);
     sig = questionSignature(q);
+    if (spec.replay && !replaySpecMatchesQuestion(spec, q, sig)) continue;
     if (!fallback || (!spec.replay && sig !== state.lastQuestionSignature)) {
       fallback = q;
       fallbackSpec = spec;
@@ -2336,6 +2362,8 @@ function submitAnswer(forceWrong) {
   state.history.push({
     key: state.current.key,
     seed: state.current.seed,
+    generatorVersion: state.current.generatorVersion || GENERATOR_VERSION,
+    signature: questionSignature(state.current),
     replay: state.current.replay === true,
     display: state.current.display,
     ...questionPresentation(state.current),
@@ -2399,6 +2427,8 @@ function endGame() {
     state.history.push({
       key: state.current.key,
       seed: state.current.seed,
+      generatorVersion: state.current.generatorVersion || GENERATOR_VERSION,
+      signature: questionSignature(state.current),
       replay: state.current.replay === true,
       display: state.current.display,
       ...questionPresentation(state.current),
@@ -2564,15 +2594,52 @@ function loadHistory() {
 }
 function saveHistory(arr) {
   try {
-    const safeArr = Array.isArray(arr) ? arr : [];
-    localStorage.setItem(STORE_KEY, JSON.stringify(safeArr.slice(-MAX_HISTORY)));
+    const safeArr = Array.isArray(arr) ? dedupeSessions(arr).slice(-MAX_HISTORY) : [];
+    localStorage.setItem(STORE_KEY, JSON.stringify(safeArr));
   }
   catch (e) { /* storage blocked/full — degrade silently */ }
+}
+function hashString(s) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(36);
+}
+function sessionFingerprint(s) {
+  return JSON.stringify({
+    t: s.t, dur: s.dur, right: s.right, wrong: s.wrong,
+    unscored: s.unscored, perMin: s.perMin, acc: s.acc,
+    byGroup: s.byGroup || {},
+    misses: (s.misses || []).map(m => ({
+      key: m.key, seed: m.seed, signature: m.signature || '', answer: m.answer || ''
+    }))
+  });
+}
+function sessionIdFor(s) {
+  const raw = s && typeof s.sessionId === 'string' ? s.sessionId.trim() : '';
+  return raw || `session-${hashString(sessionFingerprint(s || {}))}`;
+}
+function dedupeSessions(arr) {
+  const byId = new Map();
+  (Array.isArray(arr) ? arr : []).forEach(s => {
+    if (!s || typeof s !== 'object') return;
+    const id = sessionIdFor(s);
+    byId.set(id, { ...s, sessionId: id });
+  });
+  return [...byId.values()]
+    .sort((a, b) => (Number(a.t) || 0) - (Number(b.t) || 0))
+    .slice(-MAX_HISTORY);
+}
+function mergeHistories(existing, imported) {
+  return dedupeSessions([...(Array.isArray(existing) ? existing : []), ...(Array.isArray(imported) ? imported : [])]);
 }
 function sanitiseSession(s) {
   if (!s || typeof s !== 'object') return null;
   const rec = {
     schemaVersion: Number(s.schemaVersion || 1),
+    sessionId: '',
     t: Number(s.t),
     dur: Number(s.dur),
     score: Number(s.score),
@@ -2630,11 +2697,15 @@ function sanitiseSession(s) {
       .map(m => ({
         key: String(m.key || ''),
         seed: String(m.seed || ''),
+        generatorVersion: Number(m.generatorVersion || 1),
+        signature: String(m.signature || ''),
+        answer: String(m.answer || ''),
         t: Number(m.t || s.t || 0)
       }))
       .filter(m => GENERATORS[m.key] && m.seed && Number.isFinite(m.t))
       .slice(-40);
   }
+  rec.sessionId = sessionIdFor({ ...rec, sessionId: s.sessionId });
   return rec;
 }
 function getScoredHistory() {
@@ -2714,10 +2785,18 @@ function recordSession() {
   const perMin = state.duration ? (right / state.duration * 60) : 0;
   const misses = diagnosticHistory
     .filter(h => h.key && h.seed && (h.correct === false || h.timedOut === true))
-    .map(h => ({ key: h.key, seed: h.seed, t: Number.isFinite(h.t) ? h.t : Date.now() }))
+    .map(h => ({
+      key: h.key,
+      seed: h.seed,
+      generatorVersion: Number(h.generatorVersion || GENERATOR_VERSION),
+      signature: h.signature || questionSignature(h),
+      answer: h.answer,
+      t: Number.isFinite(h.t) ? h.t : Date.now()
+    }))
     .slice(-40);
   const rec = {
     schemaVersion: HISTORY_SCHEMA_VERSION,
+    sessionId: '',
     t: Date.now(), dur: state.duration, score: right,
     right, wrong: total - right,
     unscored,
@@ -2727,6 +2806,7 @@ function recordSession() {
     bySkill,
     misses
   };
+  rec.sessionId = sessionIdFor(rec);
   const hist = loadHistory();
   const prevBest = hist.reduce((m, s) => Math.max(m, s.perMin || 0), 0);
   hist.push(rec);
@@ -3141,11 +3221,14 @@ function importProgressFile(file) {
       const imported = importedSessionsFromPayload(parsed);
       if (!imported) throw new Error('No sessions array found.');
       const existing = loadHistory();
-      saveHistory(existing.concat(imported).slice(-MAX_HISTORY));
+      const existingIds = new Set(existing.map(sessionIdFor));
+      const merged = mergeHistories(existing, imported);
+      const added = merged.filter(s => !existingIds.has(sessionIdFor(s))).length;
+      saveHistory(merged);
       buildMetricOptions();
       drawProgressChart();
       renderBestPanel();
-      setProgressStatus(`Imported ${imported.length} session${imported.length === 1 ? '' : 's'}.`);
+      setProgressStatus(`Imported ${added} new session${added === 1 ? '' : 's'} (${imported.length} checked).`);
     } catch (e) {
       setProgressStatus('Import failed: choose a valid TMUA Drill JSON export.');
     }

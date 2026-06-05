@@ -34,7 +34,7 @@ The skill set is designed with reference to the official TMUA specification, Not
 - **Geometry formulas** — Pythagoras (scaled triples), circle area/circumference, arc/sector formulae in radians, regular-polygon interior angle
 - **Logic & proof fluency** — necessary/sufficient direction, if/only-if/iff translation, converse/contrapositive, compound negation, quantifier negation, counterexample patterns, proof-error spotting
 
-Four presets are built in: **Zetamac classic**, **TMUA Tier 1**, **+ Tier 2**, and **Everything**.
+Four presets are built in: **Zetamac classic**, **TMUA Tier 1**, **+ Tier 2** (coordinates, calculus, sequences, and logic), and **Everything**.
 
 ## How to use this in TMUA prep
 
@@ -65,7 +65,7 @@ Gameplay works when opening the file directly. Saved progress uses browser `loca
 
 Progress is saved per browser/device. If you clear browser data, saved progress disappears.
 
-Use the Progress screen to export JSON backups, import a JSON backup, or export CSV for spreadsheet analysis.
+Use the Progress screen to export JSON backups, import a JSON backup, or export CSV for spreadsheet analysis. JSON imports are deduplicated by session ID, so importing the same backup twice should not duplicate your sessions.
 
 The score counts submitted answers only. If time expires with a question still on screen, that question is shown in the recap as timed out and unscored.
 
@@ -81,7 +81,7 @@ Run the local regression harness with:
 node tests/regression.mjs
 ```
 
-It checks answer-normalisation regressions, generated canonical answers and alternatives, generated-format invariants, inequality equivalence and complement rejection, seeded generation for every generator, skill-group wiring, storage sanitisation, timeout diagnostics, per-skill timing aggregation, miss replay hooks, export/import controls, and accessibility hooks.
+It checks answer-normalisation regressions, generated canonical answers and alternatives, generated-format invariants, inequality equivalence and complement rejection, seeded generation for every generator, skill-group wiring, storage sanitisation, timeout diagnostics, per-skill timing aggregation, replay metadata for misses, import deduplication, export/import controls, and accessibility hooks.
 
 ## Disclaimer
 
