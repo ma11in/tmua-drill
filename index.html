@@ -42,8 +42,8 @@
     padding: 12px 16px 10px; margin: 0 0 12px; background: var(--card);
   }
   legend { font-weight: 600; padding: 0 6px; font-size: 14px; }
-  .group-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .bulk { font-size: 12px; color: var(--accent); cursor: pointer; user-select: none; }
+  .group-row { display: flex; justify-content: flex-end; margin: -24px 0 6px; }
+  .bulk { font-size: 12px; user-select: none; }
   .skills { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; }
   @media (max-width: 600px) { .skills { grid-template-columns: 1fr; } }
   .skill { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 13.5px; cursor: pointer; }
@@ -51,10 +51,11 @@
   .skill .ex { color: var(--muted); font-size: 11.5px; }
   .controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
   .controls label { font-size: 14px; }
-  .controls input[type=number] {
+  .controls input[type=number], .controls select {
     width: 70px; padding: 4px 6px; border: 1px solid var(--border);
     border-radius: 4px; background: var(--card); color: var(--fg); font-size: 14px;
   }
+  .controls select { width: auto; max-width: 220px; }
   button {
     background: var(--accent); color: white; border: 0; border-radius: 6px;
     padding: 8px 18px; font-size: 15px; font-weight: 500; cursor: pointer;
@@ -62,14 +63,72 @@
   button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
   button:hover { filter: brightness(1.1); }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.link-button {
+    background: transparent; color: var(--accent); border: 0; border-radius: 0;
+    padding: 0; font: inherit; font-weight: inherit; text-decoration: underline;
+  }
+  button.link-button:hover { filter: none; text-decoration: none; }
+  button.danger-link { color: var(--bad); }
   .start-row { margin-top: 12px; }
   .presets { margin-top: 8px; }
-  .presets .small-link { font-size: 13px; color: var(--accent); cursor: pointer; text-decoration: underline; margin-right: 14px; }
+  .presets .small-link { font-size: 13px; margin-right: 14px; }
 
   /* Game screen */
   .gamebox { text-align: center; padding-top: 30px; }
   .timer { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 22px; color: var(--muted); }
-  .question { font-size: 34px; margin: 30px 0 24px; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+  .question { font-size: 34px; margin: 30px 0 24px; min-height: 60px; display: flex; align-items: center; justify-content: center; line-height: 1.35; text-align: center; overflow-x: auto; }
+  .question .katex { max-width: 100%; white-space: normal; }
+  .logic-question {
+    width: 100%;
+    max-width: 820px;
+    box-sizing: border-box;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .logic-prompt {
+    font-size: 0.72em;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .logic-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+  .logic-choice {
+    display: flex;
+    gap: 9px;
+    align-items: baseline;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--fg);
+    text-align: left;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+  .logic-choice-key {
+    min-width: 1.4em;
+    color: var(--accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 700;
+  }
+  .logic-hint {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .recap-item .logic-question { gap: 6px; }
+  .recap-item .logic-prompt { font-size: 13px; text-align: left; }
+  .recap-item .logic-choices { grid-template-columns: 1fr; gap: 4px; }
+  .recap-item .logic-choice { padding: 3px 6px; font-size: 12px; }
+  .recap-item .logic-hint { display: none; }
   .answer-row { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
   #answer {
     font-size: 22px; padding: 10px 14px; width: 280px;
@@ -79,6 +138,17 @@
   }
   #answer:focus { outline: none; border-color: var(--accent); }
   #preview { font-size: 22px; min-width: 100px; min-height: 30px; color: var(--muted); }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
   .flash-good { animation: flash-good 0.25s ease; }
   .flash-bad { animation: flash-bad 0.4s ease; }
   @keyframes flash-good {
@@ -87,11 +157,23 @@
   @keyframes flash-bad {
     0%, 50% { background: rgba(220,38,38,0.35); } 100% { background: transparent; }
   }
+  @media (prefers-reduced-motion: reduce) {
+    .flash-good, .flash-bad { animation: none; }
+  }
   .stats { margin-top: 28px; display: flex; gap: 24px; justify-content: center; color: var(--muted); font-size: 14px; }
   .stats b { color: var(--fg); font-size: 17px; font-weight: 600; }
   .stats .good { color: var(--good); }
   .stats .bad { color: var(--bad); }
   .skip-btn { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 6px 12px; font-size: 13px; }
+  .input-tools {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    margin-top: 12px;
+  }
+  .input-tools button {
+    min-width: 44px; min-height: 44px; padding: 6px 10px;
+    background: transparent; color: var(--accent); border: 1px solid var(--border);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
   .help { margin-top: 22px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); font-size: 13px; color: var(--muted); text-align: left; }
   .help b { color: var(--fg); }
   .help code { background: var(--bg); padding: 1px 5px; border-radius: 3px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
@@ -136,6 +218,13 @@
   .best-panel td:first-child { padding-right:18px; color:var(--muted); }
   .best-panel td:last-child { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
   .best-sub { width:100%; font-size:12px; color:var(--muted); margin-top:8px; }
+  .progress-actions { display:flex; gap:10px; flex-wrap:wrap; margin:12px 0 8px; }
+  .progress-actions button { font-size:13px; padding:6px 10px; }
+  .chart-table { margin-top:10px; border:1px solid var(--border); border-radius:8px; background:var(--card); padding:8px; overflow-x:auto; }
+  .chart-table table { width:100%; border-collapse:collapse; }
+  .chart-table th, .chart-table td { padding:4px 8px; border-bottom:1px solid var(--border); font-size:12px; text-align:left; }
+  .chart-table th:last-child, .chart-table td:last-child { text-align:right; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .chart-table tr:last-child td { border-bottom:0; }
 </style>
 </head>
 <body>
@@ -144,18 +233,25 @@
   <!-- SETUP SCREEN -->
   <div id="setup">
     <h1>TMUA Mental Maths Drill</h1>
-    <p class="sub">A Zetamac-style timer covering the full no-calculator TMUA skill set — arithmetic, surds, trig, algebra, calculus, sequences and more. Tick the skills you want and hit start. No sign-up · works offline.</p>
+    <p class="sub">A Zetamac-style timer for broad TMUA no-calculator fluency — arithmetic, surds, trig, algebra, calculus, sequences and more. Tick the skills you want and hit start. No sign-up · works offline.</p>
 
     <div id="skillsContainer"></div>
 
     <div class="controls">
       <label>Duration <input type="number" id="duration" value="120" min="20" max="900" step="10"> s</label>
+      <label>Practice mode
+        <select id="practiceMode">
+          <option value="random">Random mix</option>
+          <option value="weakness">Weakness-weighted</option>
+          <option value="misses">Review recent misses</option>
+        </select>
+      </label>
     </div>
     <div class="presets">
-      <span class="small-link" data-preset="zetamac">Zetamac classic</span>
-      <span class="small-link" data-preset="tier1">TMUA Tier 1 (arith + recall + surds + trig + algebra)</span>
-      <span class="small-link" data-preset="tier2">+ Tier 2 (calc + sequences + coords)</span>
-      <span class="small-link" data-preset="all">Everything</span>
+      <button type="button" class="small-link link-button" data-preset="zetamac">Zetamac classic</button>
+      <button type="button" class="small-link link-button" data-preset="tier1">TMUA Tier 1 (arith + recall + surds + trig + algebra)</button>
+      <button type="button" class="small-link link-button" data-preset="tier2">+ Tier 2 (calc + sequences + coords)</button>
+      <button type="button" class="small-link link-button" data-preset="all">Everything</button>
     </div>
     <div class="start-row">
       <button id="startBtn">Start</button>
@@ -167,7 +263,7 @@
       <div class="help-row">
         <div>Square root</div><div>type <code>sqrt</code> or <kbd>Shift</kbd>+<kbd>S</kbd> → √</div>
         <div>Pi (π)</div><div>type <code>pi</code> or <kbd>Shift</kbd>+<kbd>P</kbd> → π</div>
-        <div>Submit / Skip</div><div><kbd>Enter</kbd> submits · <kbd>Tab</kbd> skips (counts wrong)</div>
+        <div>Submit / Skip</div><div><kbd>Enter</kbd> submits · <kbd>Esc</kbd> skips (counts wrong)</div>
       </div>
       <b style="display:block;margin-top:14px">Answer formats — give answers like this</b>
       <div class="help-row">
@@ -181,7 +277,7 @@
       </div>
     </div>
     <p class="credit">Created by <a href="https://github.com/ma11in/tmua-drill" target="_blank" rel="noopener">ma11in</a> · free &amp; open-source (MIT)</p>
-    <p class="disclaimer">Not affiliated with or endorsed by Cambridge Assessment Admissions Testing or the TMUA · all question values are randomly generated for drilling.</p>
+    <p class="disclaimer">Drills recall and no-calculator fluency; it does not replace timed TMUA papers or full Paper 2 proof practice. Not affiliated with or endorsed by Cambridge Assessment Admissions Testing or the TMUA · all question values are randomly generated for drilling.</p>
   </div>
 
   <!-- GAME SCREEN -->
@@ -189,8 +285,17 @@
     <div class="timer" id="timer">2:00</div>
     <div class="question" id="question"></div>
     <div class="answer-row">
-      <input id="answer" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-      <span id="preview"></span>
+      <label class="sr-only" for="answer">Answer</label>
+      <input id="answer" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-describedby="preview">
+      <span id="preview" aria-live="polite"></span>
+    </div>
+    <div class="input-tools" aria-label="Input helpers">
+      <button type="button" data-insert="√" aria-label="Insert square root">√</button>
+      <button type="button" data-insert="π" aria-label="Insert pi">π</button>
+      <button type="button" data-insert="/" aria-label="Insert fraction slash">/</button>
+      <button type="button" data-insert="<" aria-label="Insert less-than sign">&lt;</button>
+      <button type="button" data-insert=">" aria-label="Insert greater-than sign">&gt;</button>
+      <button type="button" data-insert="," aria-label="Insert comma separator">,</button>
     </div>
     <div class="stats">
       <span>Score <b id="score">0</b></span>
@@ -198,6 +303,7 @@
       <span>Wrong <b class="bad" id="wrongCount">0</b></span>
       <button class="skip-btn" id="skipBtn">Skip</button>
     </div>
+    <div id="answerStatus" class="sr-only" aria-live="assertive"></div>
   </div>
 
   <!-- RESULTS SCREEN -->
@@ -227,8 +333,16 @@
       <button class="ghost" id="progressBackBtn">← Back</button>
     </div>
     <div id="chart" class="chart"></div>
+    <div id="chartTable" class="chart-table"></div>
     <div id="bestPanel" class="best-panel"></div>
-    <p style="margin-top:18px"><span class="small-link" id="clearHistoryBtn" style="color:var(--bad);text-decoration:underline">Clear all saved progress</span></p>
+    <div class="progress-actions">
+      <button type="button" class="ghost" id="exportJsonBtn">Export JSON</button>
+      <button type="button" class="ghost" id="exportCsvBtn">Export CSV</button>
+      <button type="button" class="ghost" id="importProgressBtn">Import JSON</button>
+      <input type="file" id="importProgressFile" class="hidden" accept="application/json,.json">
+    </div>
+    <p class="sub" id="progressStatus" aria-live="polite"></p>
+    <p style="margin-top:18px"><button type="button" class="small-link link-button danger-link" id="clearHistoryBtn">Clear all saved progress</button></p>
   </div>
 
 </div>
@@ -239,9 +353,38 @@
 //=========================================================
 const $ = (id) => document.getElementById(id);
 const $$ = (sel) => document.querySelectorAll(sel);
-const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+let activeRandom = Math.random;
+const random = () => activeRandom();
+const rand = (a, b) => Math.floor(random() * (b - a + 1)) + a;
+const pick = (arr) => arr[Math.floor(random() * arr.length)];
 const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+function seedFromString(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function rngFromSeed(seed) {
+  let t = seedFromString(String(seed));
+  return () => {
+    t += 0x6D2B79F5;
+    let x = t;
+    x = Math.imul(x ^ (x >>> 15), x | 1);
+    x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function withSeededRandom(seed, fn) {
+  const prev = activeRandom;
+  activeRandom = rngFromSeed(seed);
+  try { return fn(); }
+  finally { activeRandom = prev; }
+}
+function makeSeed(key) {
+  return `${key}-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e9).toString(36)}`;
+}
 function nCr(n, k) {
   if (k < 0 || k > n) return 0;
   k = Math.min(k, n - k);
@@ -257,6 +400,45 @@ function reduceFrac(num, den) {
 function fracStr(num, den) {
   const [n, d] = reduceFrac(num, den);
   return d === 1 ? `${n}` : `${n}/${d}`;
+}
+function fracTeX(num, den) {
+  const [n, d] = reduceFrac(num, den);
+  return d === 1 ? `${n}` : `\\tfrac{${n}}{${d}}`;
+}
+function surdStr(coef, rad) {
+  if (coef === 0) return '0';
+  const sign = coef < 0 ? '-' : '';
+  const abs = Math.abs(coef);
+  return `${sign}${abs === 1 ? '' : abs}sqrt${rad}`;
+}
+function surdAlts(expr, rad) {
+  const token = `sqrt${rad}`;
+  return [
+    expr.replace(token, `sqrt(${rad})`),
+    expr.replace(token, `√${rad}`)
+  ].filter(x => x !== expr);
+}
+function evalPoly(coefs, x) {
+  return coefs.reduce((acc, c) => acc * x + c, 0);
+}
+function texText(s) {
+  return String(s).replace(/[{}]/g, '');
+}
+function logicChoiceQuestion({ prompt, promptText, choices, hint, answer, alts = [] }) {
+  const choiceTex = choices
+    .map(c => `\\text{${texText(c.key ? `${c.key}: ${c.text}` : c.text)}}`)
+    .join('\\qquad');
+  return {
+    display: `${prompt}\\;${choiceTex}\\;\\text{(${texText(hint)})}`,
+    prompt,
+    promptText,
+    choices,
+    hint,
+    answer,
+    alts,
+    kind: 'expr',
+    exactOnly: true
+  };
 }
 // build polynomial display string like "2x^2-3x+5"
 function polyDisp(coefs) { // [a2, a1, a0]
@@ -425,7 +607,7 @@ const GENERATORS = {
       return {
         display: `\\sqrt{${n}}`,
         answer: `${a}sqrt${b}`,
-        alts: [`${a}sqrt(${b})`, `${a}√${b}`, `${a} sqrt ${b}`, `sqrt(${n})`, `sqrt${n}`],
+        alts: [`${a}sqrt(${b})`, `${a}√${b}`, `${a} sqrt ${b}`],
         kind: 'expr'
       };
     }},
@@ -444,7 +626,7 @@ const GENERATORS = {
       const a = rand(1, 5);
       const b = pick([1, 2, 3]);
       const c = pick([2, 3, 5, 6, 7]);
-      const minus = Math.random() < 0.5;
+      const minus = random() < 0.5;
       const rat = a*a + b*b*c;
       const surd = 2*a*b;
       const bStr = b === 1 ? '' : `${b}`;
@@ -465,7 +647,7 @@ const GENERATORS = {
       const b = pick([-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]);
       const mid = a + b;
       const constTerm = a * b;
-      const askConst = Math.random() < 0.5;
+      const askConst = random() < 0.5;
       const aTeX = a >= 0 ? `+${a}` : `${a}`;
       const bTeX = b >= 0 ? `+${b}` : `${b}`;
       return {
@@ -531,6 +713,23 @@ const GENERATORS = {
         answer: `${val}`, kind: 'numeric'
       };
     }},
+  remainderTheorem: { name: 'Remainder theorem', group: 'algebra', example: 'f(x) ÷ (x−2): rem = f(2)',
+    generate() {
+      while (true) {
+        const coefs = random() < 0.5
+          ? [pick([1, 2, 3]), pick([-5,-3,-2,-1,1,2,4,5]), pick([-8,-6,-4,-2,0,2,4,6,8])]
+          : [pick([1, 2]), pick([-4,-3,-2,-1,1,2,3,4]), pick([-6,-4,-2,0,2,4,6]), pick([-8,-5,-3,0,3,5,8])];
+        const a = pick([-3,-2,-1,1,2,3]);
+        const val = evalPoly(coefs, a);
+        if (Math.abs(val) > 250) continue;
+        const divisor = a >= 0 ? `x-${a}` : `x+${-a}`;
+        return {
+          display: `${polyDisp(coefs)}\\;\\text{ divided by }(${divisor});\\;\\text{remainder}?`,
+          answer: `${val}`,
+          kind: 'numeric'
+        };
+      }
+    }},
   simultaneous: { name: 'Solve 2×2 linear (for x)', group: 'algebra', example: 'x+y=5, 2x−y=4',
     generate() {
       while (true) {
@@ -569,7 +768,7 @@ const GENERATORS = {
         if (op === '<') alts.push(`${lo}<x<${hi}`);
         else alts.push(`x<${lo} or x>${hi}`, `x<${lo},x>${hi}`, `x>${hi} or x<${lo}`, `x>${hi},x<${lo}`);
         return {
-          display: `x^{2}${bStr}${cStr} ${op} 0;\\;\\text{solve}`,
+          display: `x^{2}${bStr}${cStr} ${op} 0;\\;\\text{boundaries}`,
           answer: `${lo},${hi}`,
           alts,
           kind: 'pair'
@@ -644,7 +843,7 @@ const GENERATORS = {
         { tex: '\\frac{\\pi}{2}', sin: '1', cos: '0', tan: 'undefined', tanAlts: ['undef', 'dne'] },
         { tex: '\\frac{2\\pi}{3}', sin: 'sqrt3/2', cos: '-1/2', tan: '-sqrt3' },
         { tex: '\\frac{3\\pi}{4}', sin: 'sqrt2/2', cos: '-sqrt2/2', tan: '-1' },
-        { tex: '\\frac{5\\pi}{6}', sin: '1/2', cos: '-sqrt3/2', tan: '-sqrt3/3' },
+        { tex: '\\frac{5\\pi}{6}', sin: '1/2', cos: '-sqrt3/2', tan: '-sqrt3/3', tanAlts: ['-1/sqrt3'] },
         { tex: '\\pi', sin: '0', cos: '-1', tan: '0' },
         { tex: '\\frac{7\\pi}{6}', sin: '-1/2', cos: '-sqrt3/2', tan: 'sqrt3/3', tanAlts: ['1/sqrt3'] },
         { tex: '\\frac{5\\pi}{4}', sin: '-sqrt2/2', cos: '-sqrt2/2', tan: '1', sinAlts: ['-1/sqrt2'], cosAlts: ['-1/sqrt2'] },
@@ -652,7 +851,7 @@ const GENERATORS = {
         { tex: '\\frac{3\\pi}{2}', sin: '-1', cos: '0', tan: 'undefined', tanAlts: ['undef', 'dne'] },
         { tex: '\\frac{5\\pi}{3}', sin: '-sqrt3/2', cos: '1/2', tan: '-sqrt3' },
         { tex: '\\frac{7\\pi}{4}', sin: '-sqrt2/2', cos: 'sqrt2/2', tan: '-1' },
-        { tex: '\\frac{11\\pi}{6}', sin: '-1/2', cos: 'sqrt3/2', tan: '-sqrt3/3' },
+        { tex: '\\frac{11\\pi}{6}', sin: '-1/2', cos: 'sqrt3/2', tan: '-sqrt3/3', tanAlts: ['-1/sqrt3'] },
       ];
       const a = pick(angles);
       const fn = pick(['sin', 'cos', 'tan']);
@@ -660,7 +859,7 @@ const GENERATORS = {
       const alts = a[fn + 'Alts'] || [];
       return {
         display: `\\${fn}\\left(${a.tex}\\right)`,
-        answer: ans, alts, kind: 'expr'
+        answer: ans, alts, kind: 'expr', exactOnly: true
       };
     }},
   doubleAngle: { name: 'Double angle (Pyth triple)', group: 'trig', example: 'sin x=3/5 → sin 2x = 24/25',
@@ -693,7 +892,7 @@ const GENERATORS = {
     }},
   cosineRule: { name: 'Cosine rule c²', group: 'trig', example: 'a=2,b=3,C=60° → c²=7',
     generate() {
-      if (Math.random() < 0.6) {
+      if (random() < 0.6) {
         const a = rand(2, 6), b = rand(2, 6);
         const ang = pick([{ deg: 60, cosVal: 0.5 }, { deg: 120, cosVal: -0.5 }, { deg: 90, cosVal: 0 }]);
         return { display: `a=${a},b=${b},C=${ang.deg}°;\\;c^2=?`, answer: `${a*a + b*b - 2*a*b*ang.cosVal}`, kind: 'numeric' };
@@ -701,10 +900,11 @@ const GENERATORS = {
         while (true) {
           const cosN = pick([1, 1, 2, 3, -1, -2]), cosD = pick([2, 3, 4]);
           if (Math.abs(cosN) >= cosD) continue;
+          const [n, d] = reduceFrac(cosN, cosD);
           const a = rand(2, 8), b = rand(2, 8);
-          const twoabcos = 2*a*b*cosN / cosD;
+          const twoabcos = 2*a*b*n / d;
           if (!Number.isInteger(twoabcos)) continue;
-          return { display: `a=${a},b=${b},\\cos C=\\tfrac{${cosN}}{${cosD}};\\;c^2=?`, answer: `${a*a + b*b - twoabcos}`, kind: 'numeric' };
+          return { display: `a=${a},b=${b},\\cos C=${fracTeX(n, d)};\\;c^2=?`, answer: `${a*a + b*b - twoabcos}`, kind: 'numeric' };
         }
       }
     }},
@@ -721,13 +921,12 @@ const GENERATORS = {
         if (choice.isSurd) {
           // surd answer
           const [n, d] = reduceFrac(a*b, 4);
-          let ansEx;
-          if (d === 1) ansEx = `${n}sqrt3`;
-          else ansEx = n === 1 ? `sqrt3/${d}` : `${n}sqrt3/${d}`;
+          const surd = surdStr(n, 3);
+          const ansEx = d === 1 ? surd : `${surd}/${d}`;
           return {
             display: `a=${a},b=${b},C=${choice.deg}°;\\;\\text{Area}=?`,
             answer: ansEx,
-            alts: [ansEx.replace('sqrt3', 'sqrt(3)'), ansEx.replace('sqrt3', '√3')],
+            alts: surdAlts(ansEx, 3),
             kind: 'expr'
           };
         }
@@ -825,7 +1024,7 @@ const GENERATORS = {
     }},
   perpGradient: { name: 'Perpendicular gradient', group: 'coords', example: 'perp y=3x+2 → −1/3',
     generate() {
-      if (Math.random() < 0.5) {
+      if (random() < 0.5) {
         const m = pick([-9,-7,-5,-4,-3,-2,2,3,4,5,7,9]);
         const c = rand(-5, 5);
         const cStr = c === 0 ? '' : signed(c);
@@ -837,6 +1036,32 @@ const GENERATORS = {
         const gradStr = qr === 1 ? `${pr}` : `\\tfrac{${pr}}{${qr}}`;
         const [n, d] = reduceFrac(-qr, pr);
         return { display: `\\text{Perp gradient to line of gradient }${gradStr}`, answer: d === 1 ? `${n}` : `${n}/${d}`, alts: [`${-qr/pr}`], kind: 'fraction' };
+      }
+    }},
+  lineEquation: { name: 'Straight-line equation', group: 'coords', example: 'y=2x+c through (3,5) → c=−1',
+    generate() {
+      if (random() < 0.5) {
+        const m = pick([-4,-3,-2,-1,1,2,3,4]);
+        const c = rand(-8, 8);
+        const x = rand(-4, 4);
+        const y = m*x + c;
+        return {
+          display: `y=${m}x+c\\;\\text{ passes through }(${x},${y});\\;c=?`,
+          answer: `${c}`,
+          kind: 'numeric'
+        };
+      }
+      while (true) {
+        const x1 = rand(-5, 5), x2 = rand(-5, 5);
+        if (x1 === x2) continue;
+        const m = pick([-4,-3,-2,-1,1,2,3,4]);
+        const c = rand(-6, 6);
+        const y1 = m*x1 + c, y2 = m*x2 + c;
+        return {
+          display: `\\text{Gradient of line through }(${x1},${y1}),(${x2},${y2})`,
+          answer: `${m}`,
+          kind: 'numeric'
+        };
       }
     }},
   circleCentre: { name: 'Circle centre from eqn', group: 'coords', example: 'x²+y²−4x+6y−12=0',
@@ -858,7 +1083,7 @@ const GENERATORS = {
   // ============ CALCULUS ============
   differentiate: { name: "f'(x) at a point", group: 'calc', example: '3x²+2x at x=2 → 14',
     generate() {
-      if (Math.random() < 0.5) {
+      if (random() < 0.5) {
         const a = pick([1, 2, 3, 4]);
         const b = pick([-5,-3,-1,1,2,3,4,5,6]);
         const c = pick([-10,-5,0,5,10]);
@@ -892,9 +1117,22 @@ const GENERATORS = {
         return { display: `\\int_{${lo}}^{${hi}} (${polyDisp([a3, a, b, c])})\\,dx`, answer: `${ans}`, kind: 'numeric' };
       }
     }},
+  trapeziumRule: { name: 'Trapezium rule', group: 'calc', example: 'h=1, y: 2,5,8 → 10',
+    generate() {
+      const n = pick([2, 3, 4]);
+      const h = pick([1, 1, 2, 3]);
+      const ys = Array.from({ length: n + 1 }, () => rand(0, 9));
+      const middle = ys.slice(1, -1).reduce((sum, y) => sum + y, 0);
+      const numerator = h * (ys[0] + ys[n] + 2 * middle);
+      return {
+        display: `\\text{Trapezium rule: }h=${h},\\;y_0..y_${n}=${ys.join(',')}`,
+        answer: fracStr(numerator, 2),
+        kind: 'fraction'
+      };
+    }},
   stationaryPoint: { name: 'Stationary point x', group: 'calc', example: 'x²−6x+8 → x=3',
     generate() {
-      if (Math.random() < 0.5) {
+      if (random() < 0.5) {
         while (true) {
           const a = pick([1, 2, 3]);
           const b = pick([-12,-10,-8,-6,-4,-2,2,4,6,8,10,12]);
@@ -924,6 +1162,25 @@ const GENERATORS = {
         display: `\\text{AP }a=${a},d=${signed(d)},n=${n};\\;S_n=?`,
         answer: `${sum}`, kind: 'numeric'
       };
+    }},
+  recurrenceTerm: { name: 'Recurrence term', group: 'sequences', example: 'x₁=2, xₙ₊₁=2xₙ−1 → x₅',
+    generate() {
+      while (true) {
+        const x1 = rand(-4, 6);
+        const a = pick([-2, -1, 1, 2]);
+        const b = pick([-5,-3,-2,-1,1,2,3,5]);
+        const n = pick([4, 5, 6, 7]);
+        let x = x1;
+        for (let i = 1; i < n; i++) x = a*x + b;
+        if (Math.abs(x) > 250) continue;
+        const aStr = a === 1 ? '' : a === -1 ? '-' : `${a}`;
+        const bStr = b === 0 ? '' : signed(b);
+        return {
+          display: `x_1=${x1},\\;x_{n+1}=${aStr}x_n${bStr};\\;x_${n}=?`,
+          answer: `${x}`,
+          kind: 'numeric'
+        };
+      }
     }},
   gpSumFinite: { name: 'GP sum S_n', group: 'sequences', example: 'a=2,r=3,n=5 → 242',
     generate() {
@@ -997,7 +1254,7 @@ const GENERATORS = {
       const triples = [[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29],[9,40,41]];
       const [a, b, c] = pick(triples);
       // Sometimes randomly swap which leg is "the given one"
-      const givenLeg = Math.random() < 0.5 ? a : b;
+      const givenLeg = random() < 0.5 ? a : b;
       const otherLeg = givenLeg === a ? b : a;
       // Scale: integer 1..17, or fractional 1/k. Weight 1 (unscaled) lower so scaled cases dominate.
       const scaleType = pick(['int','int','int','int','frac','frac','one']);
@@ -1018,12 +1275,12 @@ const GENERATORS = {
       }
       // Fractional scaling (1/k)
       const k = pick([2, 3, 5, 7, 11, 13, 17]);
-      const aTeX = `\\tfrac{${a}}{${k}}`, bTeX = `\\tfrac{${b}}{${k}}`, cTeX = `\\tfrac{${c}}{${k}}`;
-      const givenLegTeX = `\\tfrac{${givenLeg}}{${k}}`;
+      const aTeX = fracTeX(a, k), bTeX = fracTeX(b, k), cTeX = fracTeX(c, k);
+      const givenLegTeX = fracTeX(givenLeg, k);
       if (ask === 'hyp') {
-        return { display: `\\text{Legs }${aTeX}, ${bTeX};\\;\\text{hyp}=?`, answer: `${c}/${k}`, kind: 'fraction' };
+        return { display: `\\text{Legs }${aTeX}, ${bTeX};\\;\\text{hyp}=?`, answer: fracStr(c, k), kind: 'fraction' };
       }
-      return { display: `\\text{Hyp }${cTeX},\\;\\text{leg }${givenLegTeX};\\;\\text{other leg}=?`, answer: `${otherLeg}/${k}`, kind: 'fraction' };
+      return { display: `\\text{Hyp }${cTeX},\\;\\text{leg }${givenLegTeX};\\;\\text{other leg}=?`, answer: fracStr(otherLeg, k), kind: 'fraction' };
     }},
   circleArea: { name: 'Circle area / circumference', group: 'geom', example: 'r=4, A → 16π',
     generate() {
@@ -1044,6 +1301,30 @@ const GENERATORS = {
           kind: 'expr'
         };
       }
+    }},
+  arcSector: { name: 'Arc / sector (radians)', group: 'geom', example: 'r=6, θ=2 → arc 12',
+    generate() {
+      const r = pick([2, 3, 4, 5, 6, 8, 10, 12]);
+      const theta = pick([
+        { tex: '1', n: 1, d: 1 },
+        { tex: '2', n: 2, d: 1 },
+        { tex: '\\tfrac{1}{2}', n: 1, d: 2 },
+        { tex: '\\tfrac{2}{3}', n: 2, d: 3 },
+        { tex: '\\tfrac{3}{2}', n: 3, d: 2 },
+      ]);
+      const ask = pick(['arc', 'sector']);
+      if (ask === 'arc') {
+        return {
+          display: `r=${r},\\;\\theta=${theta.tex}\\text{ rad};\\;\\text{arc length}?`,
+          answer: fracStr(r * theta.n, theta.d),
+          kind: 'fraction'
+        };
+      }
+      return {
+        display: `r=${r},\\;\\theta=${theta.tex}\\text{ rad};\\;\\text{sector area}?`,
+        answer: fracStr(r * r * theta.n, 2 * theta.d),
+        kind: 'fraction'
+      };
     }},
   polygonInteriorAngle: { name: 'Regular polygon int angle', group: 'geom', example: 'hexagon → 120°',
     generate() {
@@ -1066,7 +1347,7 @@ const GENERATORS = {
   // ===== Tier-1 additions (coverage gaps from the past-paper audit) =====
   diffPower: { name: "f'(x): √x and 1/x", group: 'calc', example: "f=6√x, f'(9) → 1",
     generate() {
-      if (Math.random() < 0.5) {
+      if (random() < 0.5) {
         const a = rand(1, 12), s = rand(1, 4);
         return { display: `f(x)=${a}\\sqrt{x};\\;f'(${s*s})=?`, answer: fracStr(a, 2*s), alts: [`${a}/${2*s}`], kind: 'fraction' };
       } else {
@@ -1140,7 +1421,7 @@ const GENERATORS = {
     }},
   diamondArea: { name: 'Area of |x|+|y|=k', group: 'geom', example: '|x|+|y|=4 → 32',
     generate() {
-      if (Math.random() < 0.5) {
+      if (random() < 0.5) {
         const k = rand(2, 9);
         return { display: `\\text{Area enclosed by }|x|+|y|=${k}`, answer: `${2*k*k}`, kind: 'numeric' };
       } else {
@@ -1183,6 +1464,136 @@ const GENERATORS = {
       if (op === '×') { num = a*c; den = b*d; } else { num = a*d; den = b*c; }
       return { display: `\\dfrac{${a}}{${b}} ${op === '×' ? '\\times' : '\\div'} \\dfrac{${c}}{${d}}`, answer: fracStr(num, den), alts: [`${num}/${den}`], kind: 'fraction' };
     }},
+
+  // ============ LOGIC & PROOF FLUENCY ============
+  necessarySufficient: { name: 'Necessary / sufficient', group: 'logic', example: 'A ⇒ B: A is sufficient for B',
+    generate() {
+      const c = pick([
+        { rel: 'A \\Rightarrow B', prompt: 'For B, A is', answer: 'sufficient', alts: ['suff'] },
+        { rel: 'A \\Rightarrow B', prompt: 'For A, B is', answer: 'necessary', alts: ['nec'] },
+        { rel: 'A \\Leftrightarrow B', prompt: 'For B, A is', answer: 'both', alts: ['necessaryandsufficient', 'necessary and sufficient', 'necandsuff'] },
+        { rel: 'A \\nRightarrow B,\\;B \\nRightarrow A', prompt: 'For B, A is', answer: 'neither', alts: ['notnecessarynotsufficient', 'not necessary not sufficient'] },
+      ]);
+      return logicChoiceQuestion({
+        prompt: `\\text{Given }${c.rel}.\\;\\text{${c.prompt}?}`,
+        promptText: `Given ${c.rel.replace(/\\Rightarrow/g, '⇒').replace(/\\Leftrightarrow/g, '⇔').replace(/\\nRightarrow/g, '⇏').replace(/\\;/g, ' ')}. ${c.prompt}?`,
+        choices: [
+          { text: 'necessary' },
+          { text: 'sufficient' },
+          { text: 'both' },
+          { text: 'neither' }
+        ],
+        hint: 'type the word',
+        answer: c.answer,
+        alts: c.alts
+      });
+    }},
+  converseContrapositive: { name: 'Converse / contrapositive', group: 'logic', example: 'If A then B → if not B then not A',
+    generate() {
+      const c = pick([
+        {
+          prompt: '\\text{Original: if A then B. Which is the contrapositive?}',
+          promptText: 'Original: if A then B. Which is the contrapositive?',
+          choices: [
+            { key: 'A', text: 'if B then A' },
+            { key: 'B', text: 'if not B then not A' },
+            { key: 'C', text: 'if not A then not B' }
+          ],
+          answer: 'B'
+        },
+        {
+          prompt: '\\text{Original: if A then B. Which is the converse?}',
+          promptText: 'Original: if A then B. Which is the converse?',
+          choices: [
+            { key: 'A', text: 'if B then A' },
+            { key: 'B', text: 'if not B then not A' },
+            { key: 'C', text: 'if not A then not B' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{Which is equivalent to if A then B?}',
+          promptText: 'Which is equivalent to if A then B?',
+          choices: [
+            { key: 'A', text: 'converse' },
+            { key: 'B', text: 'contrapositive' },
+            { key: 'C', text: 'inverse' }
+          ],
+          answer: 'B',
+          alts: ['contrapositive']
+        },
+      ]);
+      return logicChoiceQuestion({ ...c, hint: 'type A/B/C', alts: c.alts || [] });
+    }},
+  quantifierNegation: { name: 'Quantifier negation', group: 'logic', example: 'not(for all) → exists not',
+    generate() {
+      const c = pick([
+        {
+          prompt: '\\text{Negate: for all x, P(x).}',
+          promptText: 'Negate: for all x, P(x).',
+          choices: [
+            { key: 'A', text: 'there exists x with not P(x)' },
+            { key: 'B', text: 'for all x, not P(x)' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{Negate: there exists x with P(x).}',
+          promptText: 'Negate: there exists x with P(x).',
+          choices: [
+            { key: 'A', text: 'there exists x with not P(x)' },
+            { key: 'B', text: 'for all x, not P(x)' }
+          ],
+          answer: 'B'
+        },
+        {
+          prompt: '\\text{Negate: for all x, there exists y with P(x,y).}',
+          promptText: 'Negate: for all x, there exists y with P(x,y).',
+          choices: [
+            { key: 'A', text: 'exists x such that for all y, not P(x,y)' },
+            { key: 'B', text: 'for all y, exists x with not P(x,y)' }
+          ],
+          answer: 'A'
+        },
+      ]);
+      return logicChoiceQuestion({ ...c, hint: 'type A/B' });
+    }},
+  counterexamplePattern: { name: 'Counterexample pattern', group: 'logic', example: 'if P then Q: P true, Q false',
+    generate() {
+      const c = pick([
+        {
+          prompt: '\\text{To disprove "if P then Q", a counterexample has}',
+          promptText: 'To disprove "if P then Q", a counterexample has',
+          choices: [
+            { key: 'A', text: 'P true, Q false' },
+            { key: 'B', text: 'P false, Q true' },
+            { key: 'C', text: 'P true, Q true' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{To disprove "all x have P", you need}',
+          promptText: 'To disprove "all x have P", you need',
+          choices: [
+            { key: 'A', text: 'one x without P' },
+            { key: 'B', text: 'one x with P' },
+            { key: 'C', text: 'every x without P' }
+          ],
+          answer: 'A'
+        },
+        {
+          prompt: '\\text{An attempted proof squares both sides. What must be checked?}',
+          promptText: 'An attempted proof squares both sides. What must be checked?',
+          choices: [
+            { key: 'A', text: 'no extra roots' },
+            { key: 'B', text: 'units' },
+            { key: 'C', text: 'decimal places' }
+          ],
+          answer: 'A'
+        },
+      ]);
+      return logicChoiceQuestion({ ...c, hint: 'type A/B/C' });
+    }},
 };
 
 //=========================================================
@@ -1193,14 +1604,15 @@ const GROUPS = [
   { key: 'recall',    label: 'Recall',                items: ['squares','cubes','powers2','binomCoef'] },
   { key: 'numtheory', label: 'Number theory',         items: ['smallPrimeFactor','hcfLcm','binaryToDecimal'] },
   { key: 'surds',     label: 'Surds',                 items: ['simplifySurd','rationalise','expandSurdSq','denestSurd'] },
-  { key: 'algebra',   label: 'Algebra',               items: ['expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','discriminant','substitute','simultaneous','quadInequalityBounds','modulusEqn','modulusInequality'] },
+  { key: 'algebra',   label: 'Algebra',               items: ['expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','discriminant','substitute','remainderTheorem','simultaneous','quadInequalityBounds','modulusEqn','modulusInequality'] },
   { key: 'idxlog',    label: 'Indices & logs',        items: ['indexLaws','expSolve','evalLog','changeBaseLog','combineLogs'] },
   { key: 'trig',      label: 'Trigonometry',          items: ['exactTrig','doubleAngle','pythagIdentity','cosineRule','triangleArea','countTrigSolns','trigPeriodMax'] },
-  { key: 'coords',    label: 'Coordinate geometry',   items: ['distance','midpoint','perpGradient','circleCentre','circleRadius'] },
-  { key: 'calc',      label: 'Calculus',              items: ['differentiate','diffPower','definiteIntegral','stationaryPoint'] },
-  { key: 'sequences', label: 'Sequences',             items: ['apSum','gpSumFinite','gpInfinity'] },
+  { key: 'coords',    label: 'Coordinate geometry',   items: ['distance','midpoint','perpGradient','lineEquation','circleCentre','circleRadius'] },
+  { key: 'calc',      label: 'Calculus',              items: ['differentiate','diffPower','definiteIntegral','trapeziumRule','stationaryPoint'] },
+  { key: 'sequences', label: 'Sequences',             items: ['apSum','recurrenceTerm','gpSumFinite','gpInfinity'] },
   { key: 'functions', label: 'Functions',             items: ['compose','modulusEval'] },
-  { key: 'geom',      label: 'Geometry formulas',     items: ['pythagoras','circleArea','polygonInteriorAngle','diamondArea'] },
+  { key: 'geom',      label: 'Geometry formulas',     items: ['pythagoras','circleArea','arcSector','polygonInteriorAngle','diamondArea'] },
+  { key: 'logic',     label: 'Logic & proof fluency', items: ['necessarySufficient','converseContrapositive','quantifierNegation','counterexamplePattern'] },
 ];
 
 //=========================================================
@@ -1209,6 +1621,7 @@ const GROUPS = [
 function normalize(s) {
   return (s || '').toString().toLowerCase().trim()
     .replace(/\s+/g, '')
+    .replace(/[−–—]/g, '-')
     .replace(/√/g, 'sqrt')
     .replace(/π/g, 'pi')
     .replace(/\*\*/g, '^')
@@ -1244,13 +1657,46 @@ function looselyEqualNumeric(a, b) {
   if (!isNaN(an) && !isNaN(bn)) return Math.abs(an - bn) < 1e-9;
   return false;
 }
+function canonicalIneq(s) {
+  const raw = normalize(s);
+  let n = raw.replace(/and/g, ',');
+  let m;
+  const num = '-?(?:\\d+\\.?\\d*|\\.\\d+)';
+  const fmt = x => `${Number(x)}`;
+
+  if ((m = n.match(new RegExp(`^(${num})>x$`)))) return `x<${fmt(m[1])}`;
+  if ((m = n.match(new RegExp(`^(${num})<x$`)))) return `x>${fmt(m[1])}`;
+  if ((m = n.match(new RegExp(`^(${num})<x<(${num})$`)))) {
+    const a = Number(m[1]), b = Number(m[2]);
+    return a < b ? `${fmt(a)}<x<${fmt(b)}` : n;
+  }
+  if ((m = n.match(new RegExp(`^x>(${num}),x<(${num})$`)))) {
+    const a = Number(m[1]), b = Number(m[2]);
+    return a < b ? `${fmt(a)}<x<${fmt(b)}` : n;
+  }
+  if ((m = n.match(new RegExp(`^x<(${num}),x>(${num})$`)))) {
+    const a = Number(m[2]), b = Number(m[1]);
+    return a < b ? `${fmt(a)}<x<${fmt(b)}` : n;
+  }
+  if ((m = raw.match(new RegExp(`^x<(${num})orx>(${num})$`)))) {
+    const lo = Number(m[1]), hi = Number(m[2]);
+    return lo < hi ? `x<${fmt(lo)}orx>${fmt(hi)}` : raw;
+  }
+  if ((m = raw.match(new RegExp(`^x>(${num})orx<(${num})$`)))) {
+    const hi = Number(m[1]), lo = Number(m[2]);
+    return lo < hi ? `x<${fmt(lo)}orx>${fmt(hi)}` : raw;
+  }
+  return n;
+}
 function checkAnswer(userInput, q) {
   if (!userInput) return false;
   const candidates = [q.answer, ...(q.alts || [])];
   const ui = normalize(userInput);
+  const uiIneq = canonicalIneq(userInput);
 
   for (const c of candidates) {
     if (normalize(c) === ui) return true;
+    if (canonicalIneq(c) === uiIneq) return true;
   }
   if (q.kind === 'numeric' || q.kind === 'fraction') {
     for (const c of candidates) {
@@ -1278,10 +1724,12 @@ function checkAnswer(userInput, q) {
       const cR = reorderAdditive(stripParens(normalize(c)));
       if (uiR === cR) return true;
     }
-    // 3) Numeric equivalence for pure rational/decimal answers (e.g. 0.5 vs 1/2).
-    //    Surd/pi answers parse to NaN, so this never falsely accepts a decimal for √ or π.
-    for (const c of candidates) {
-      if (looselyEqualNumeric(userInput, c)) return true;
+    if (!q.exactOnly) {
+      // 3) Numeric equivalence for pure rational/decimal answers (e.g. 0.5 vs 1/2).
+      //    Surd/pi answers parse to NaN, so this never falsely accepts a decimal for √ or π.
+      for (const c of candidates) {
+        if (looselyEqualNumeric(userInput, c)) return true;
+      }
     }
   }
   return false;
@@ -1294,21 +1742,43 @@ function populateSkills() {
   const root = $('skillsContainer');
   GROUPS.forEach(g => {
     const fs = document.createElement('fieldset');
-    fs.innerHTML = `
-      <div class="group-row">
-        <legend>${g.label}</legend>
-        <span class="bulk" data-bulk="${g.key}">all / none</span>
-      </div>
-      <div class="skills" data-group="${g.key}"></div>
-    `;
+    const legend = document.createElement('legend');
+    legend.textContent = g.label;
+    fs.appendChild(legend);
+
+    const row = document.createElement('div');
+    row.className = 'group-row';
+    const bulk = document.createElement('button');
+    bulk.type = 'button';
+    bulk.className = 'bulk link-button';
+    bulk.dataset.bulk = g.key;
+    bulk.textContent = 'all / none';
+    row.appendChild(bulk);
+    fs.appendChild(row);
+
+    const cont = document.createElement('div');
+    cont.className = 'skills';
+    cont.dataset.group = g.key;
+    fs.appendChild(cont);
+
     root.appendChild(fs);
-    const cont = fs.querySelector('.skills');
     g.items.forEach(key => {
       const gen = GENERATORS[key];
       if (!gen) return;
       const lab = document.createElement('label');
       lab.className = 'skill';
-      lab.innerHTML = `<input type="checkbox" data-group="${g.key}" data-key="${key}" checked> <span>${gen.name} <span class="ex">${gen.example}</span></span>`;
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.dataset.group = g.key;
+      box.dataset.key = key;
+      box.checked = true;
+      const name = document.createElement('span');
+      name.textContent = `${gen.name} `;
+      const ex = document.createElement('span');
+      ex.className = 'ex';
+      ex.textContent = gen.example;
+      name.appendChild(ex);
+      lab.append(box, name);
       cont.appendChild(lab);
     });
   });
@@ -1346,7 +1816,7 @@ function applyPreset(name) {
       'squares','cubes','powers2','binomCoef',
       'simplifySurd','rationalise','denestSurd',
       'exactTrig','pythagIdentity','doubleAngle','cosineRule',
-      'expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','substitute','discriminant','quadInequalityBounds','modulusEqn','modulusInequality',
+      'expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','substitute','remainderTheorem','discriminant','quadInequalityBounds','modulusEqn','modulusInequality',
       'indexLaws','evalLog','expSolve','changeBaseLog','combineLogs',
       'differentiate','diffPower'
     ]);
@@ -1357,14 +1827,15 @@ function applyPreset(name) {
       'squares','cubes','powers2','binomCoef',
       'simplifySurd','rationalise','expandSurdSq','denestSurd',
       'exactTrig','pythagIdentity','doubleAngle','triangleArea','cosineRule','countTrigSolns','trigPeriodMax',
-      'expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','substitute','discriminant','simultaneous','quadInequalityBounds','modulusEqn','modulusInequality',
+      'expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','substitute','remainderTheorem','discriminant','simultaneous','quadInequalityBounds','modulusEqn','modulusInequality',
       'indexLaws','evalLog','expSolve','changeBaseLog','combineLogs',
-      'distance','midpoint','perpGradient','circleCentre','circleRadius',
-      'differentiate','diffPower','definiteIntegral','stationaryPoint',
-      'apSum','gpSumFinite','gpInfinity',
+      'distance','midpoint','perpGradient','lineEquation','circleCentre','circleRadius',
+      'differentiate','diffPower','definiteIntegral','trapeziumRule','stationaryPoint',
+      'apSum','recurrenceTerm','gpSumFinite','gpInfinity',
       'compose','modulusEval',
-      'pythagoras','circleArea','polygonInteriorAngle','diamondArea',
-      'smallPrimeFactor','hcfLcm'
+      'pythagoras','circleArea','arcSector','polygonInteriorAngle','diamondArea',
+      'smallPrimeFactor','hcfLcm',
+      'necessarySufficient','converseContrapositive','quantifierNegation','counterexamplePattern'
     ]);
     $('duration').value = 240;
   } else if (name === 'all') {
@@ -1379,20 +1850,198 @@ function applyPreset(name) {
 const state = {
   duration: 120, pool: [], current: null,
   score: 0, right: 0, wrong: 0,
+  mode: 'random',
+  adaptiveStats: {},
+  reviewQueue: [],
   history: [], timerId: null, endsAt: 0,
+  questionStartedAt: 0,
+  lastQuestionSignature: '',
 };
+
+function nowMs() {
+  return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+}
+
+function pickWeighted(keys, weightFn) {
+  const weighted = keys.map(key => ({ key, w: Math.max(0.1, weightFn(key)) }));
+  const total = weighted.reduce((sum, x) => sum + x.w, 0);
+  let r = random() * total;
+  for (const x of weighted) {
+    r -= x.w;
+    if (r <= 0) return x.key;
+  }
+  return weighted[weighted.length - 1].key;
+}
+
+const DEFAULT_TARGET_MS = 6500;
+const GROUP_TARGET_MS = {
+  arith: 2500, recall: 3000, numtheory: 5000, surds: 6500,
+  algebra: 8000, idxlog: 6500, trig: 5500, coords: 6000,
+  calc: 7500, sequences: 7000, functions: 5500, geom: 5000,
+  logic: 7500
+};
+const TARGET_MS = {
+  add: 1800, sub: 2200, mul: 3000, div: 3500,
+  squares: 1800, cubes: 2500, powers2: 2000,
+  exactTrig: 3000, pythagIdentity: 4500,
+  simplifySurd: 4500, rationalise: 6500,
+  completeSq: 9000, simultaneous: 8500,
+  remainderTheorem: 6500, lineEquation: 5500,
+  definiteIntegral: 8500, trapeziumRule: 8000, stationaryPoint: 8500,
+  recurrenceTerm: 8000, arcSector: 5500,
+  necessarySufficient: 6000, converseContrapositive: 6500,
+  quantifierNegation: 7000, counterexamplePattern: 6000
+};
+function targetMsForSkill(key) {
+  if (TARGET_MS[key]) return TARGET_MS[key];
+  const g = GENERATORS[key] && GENERATORS[key].group;
+  return GROUP_TARGET_MS[g] || DEFAULT_TARGET_MS;
+}
+
+function skillWeight(key, stats) {
+  const s = stats[key];
+  if (!s) return 2.2;
+  const n = Math.max(0, s.n || 0);
+  const wrong = Math.max(0, n - (s.r || 0));
+  const wrongRate = (wrong + 1.5) / (n + 3); // beta-binomial smoothing: tiny samples do not dominate.
+  const target = targetMsForSkill(key);
+  const pace = s.meanMs || s.medianMs || 0;
+  const speedPenalty = pace ? Math.min(1.5, Math.max(0, pace - target) / target) : 0;
+  const timedOut = s.timedOut || 0;
+  const timeoutPenalty = timedOut ? Math.min(1.2, (timedOut + 0.5) / (n + timedOut + 2)) : 0;
+  const recent = Array.isArray(s.recent) ? s.recent : [];
+  const recentMissRate = recent.length ? recent.filter(v => !v).length / recent.length : 0;
+  const daysSince = s.lastSeen ? (Date.now() - s.lastSeen) / 86400000 : 10;
+  const reviewBonus = Math.min(0.8, Math.max(0, daysSince - 3) / 10);
+  return 0.35 + 3 * wrongRate + 1.4 * speedPenalty + timeoutPenalty + 0.7 * recentMissRate + reviewBonus;
+}
+
+function recentMissWeight(key, stats) {
+  const recent = stats[key] && Array.isArray(stats[key].recent) ? stats[key].recent : [];
+  const misses = recent.filter(v => !v).length;
+  return misses ? 0.5 + misses : 0;
+}
+
+function chooseQuestionKey() {
+  const stats = state.adaptiveStats || {};
+  if (state.mode === 'weakness') {
+    return pickWeighted(state.pool, key => skillWeight(key, stats));
+  }
+  if (state.mode === 'misses') {
+    const missed = state.pool.filter(key => recentMissWeight(key, stats) > 0);
+    if (missed.length) return pickWeighted(missed, key => recentMissWeight(key, stats));
+  }
+  return pick(state.pool);
+}
+
+function buildReviewQueue(hist, pool) {
+  const allowed = new Set(pool);
+  const items = [];
+  hist.slice().reverse().forEach(session => {
+    (session.misses || []).slice().reverse().forEach(m => {
+      if (allowed.has(m.key) && m.seed) items.push({ key: m.key, seed: m.seed });
+    });
+  });
+  return items.slice(0, 40);
+}
+
+function chooseQuestionSpec() {
+  if (state.mode === 'misses' && state.reviewQueue.length) {
+    const item = state.reviewQueue.shift();
+    return { key: item.key, seed: item.seed, replay: true };
+  }
+  const key = chooseQuestionKey();
+  return { key, seed: makeSeed(key), replay: false };
+}
+
+function generateQuestion(key, seed) {
+  const q = withSeededRandom(seed, () => GENERATORS[key].generate());
+  q.key = key;
+  q.seed = seed;
+  return q;
+}
+
+function questionSignature(q) {
+  if (!q) return '';
+  return normalize(`${q.key}|${q.promptText || q.display}|${q.answer}`);
+}
 
 function renderTeX(target, latex) {
   if (window.katex) katex.render(latex, target, { throwOnError: false, displayMode: false });
   else target.textContent = latex;
 }
 
+function renderQuestion(target, q) {
+  target.textContent = '';
+  if (!q || !q.prompt || !Array.isArray(q.choices)) {
+    renderTeX(target, q && q.display ? q.display : '');
+    return;
+  }
+
+  const box = document.createElement('div');
+  box.className = 'logic-question';
+
+  const prompt = document.createElement('div');
+  prompt.className = 'logic-prompt';
+  if (q.promptText) prompt.textContent = q.promptText;
+  else renderTeX(prompt, q.prompt);
+
+  const choices = document.createElement('div');
+  choices.className = 'logic-choices';
+  q.choices.forEach(choice => {
+    const item = document.createElement('div');
+    item.className = 'logic-choice';
+    if (choice.key) {
+      const key = document.createElement('span');
+      key.className = 'logic-choice-key';
+      key.textContent = choice.key;
+      item.appendChild(key);
+    }
+    const text = document.createElement('span');
+    text.className = 'logic-choice-text';
+    text.textContent = choice.text;
+    item.appendChild(text);
+    choices.appendChild(item);
+  });
+
+  const hint = document.createElement('div');
+  hint.className = 'logic-hint';
+  hint.textContent = q.hint || 'type the answer';
+
+  box.append(prompt, choices, hint);
+  target.appendChild(box);
+}
+
+function questionPresentation(q) {
+  if (!q || !q.prompt || !Array.isArray(q.choices)) return {};
+  return {
+    prompt: q.prompt,
+    promptText: q.promptText || '',
+    choices: q.choices.map(c => ({ key: c.key || '', text: c.text })),
+    hint: q.hint || ''
+  };
+}
+
+function setAnswerStatus(text) {
+  const el = $('answerStatus');
+  if (!el) return;
+  el.textContent = '';
+  setTimeout(() => { el.textContent = text; }, 0);
+}
+
 function nextQuestion() {
-  const key = pick(state.pool);
-  const q = GENERATORS[key].generate();
-  q.key = key;
+  let spec;
+  let q;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    spec = chooseQuestionSpec();
+    q = generateQuestion(spec.key, spec.seed);
+    if (spec.replay || questionSignature(q) !== state.lastQuestionSignature) break;
+  }
+  q.replay = spec.replay;
   state.current = q;
-  renderTeX($('question'), q.display);
+  state.lastQuestionSignature = questionSignature(q);
+  state.questionStartedAt = nowMs();
+  renderQuestion($('question'), q);
   $('answer').value = '';
   $('preview').textContent = '';
   $('answer').focus();
@@ -1406,15 +2055,27 @@ function flashElement(el, cls) {
 
 function submitAnswer(forceWrong) {
   if (!state.current) return;
+  if (Date.now() >= state.endsAt) {
+    endGame();
+    return;
+  }
   const val = $('answer').value;
-  // Pressing Enter on an empty box does nothing (only Tab/Skip counts as wrong)
+  // Pressing Enter on an empty box does nothing (only Escape/Skip counts as wrong)
   if (!forceWrong && val.trim() === '') return;
   const correct = !forceWrong && checkAnswer(val, state.current);
+  setAnswerStatus(correct ? 'Correct' : `Incorrect. Correct answer was ${state.current.answer}.`);
   state.history.push({
     key: state.current.key,
+    seed: state.current.seed,
+    replay: state.current.replay === true,
     display: state.current.display,
+    ...questionPresentation(state.current),
     answer: state.current.answer,
-    user: val, correct
+    user: val,
+    t: Date.now(),
+    ms: Math.max(0, Math.round(nowMs() - state.questionStartedAt)),
+    correct,
+    scored: true
   });
   if (correct) {
     state.score++; state.right++;
@@ -1432,9 +2093,14 @@ function submitAnswer(forceWrong) {
 function startGame() {
   const skills = selectedSkills();
   if (skills.length === 0) { alert('Pick at least one skill.'); return; }
+  const savedHistory = loadHistory();
   state.pool = skills;
+  state.mode = $('practiceMode').value || 'random';
+  state.adaptiveStats = aggregateSkillStats(savedHistory);
+  state.reviewQueue = state.mode === 'misses' ? buildReviewQueue(savedHistory, skills) : [];
   state.duration = Math.max(20, Math.min(900, parseInt($('duration').value) || 120));
   state.score = 0; state.right = 0; state.wrong = 0; state.history = [];
+  state.lastQuestionSignature = '';
   state.endsAt = Date.now() + state.duration * 1000;
   $('score').textContent = '0';
   $('rightCount').textContent = '0';
@@ -1459,53 +2125,82 @@ function endGame() {
   clearInterval(state.timerId);
   // Capture the on-screen question (time ran out before submit) so user can see its answer
   if (state.current) {
+    setAnswerStatus(`Time expired. Correct answer was ${state.current.answer}.`);
     state.history.push({
       key: state.current.key,
+      seed: state.current.seed,
+      replay: state.current.replay === true,
       display: state.current.display,
+      ...questionPresentation(state.current),
       answer: state.current.answer,
       user: $('answer').value,
+      t: Date.now(),
+      ms: Math.max(0, Math.round(nowMs() - state.questionStartedAt)),
       correct: false,
-      timedOut: true
+      timedOut: true,
+      scored: false
     });
   }
   state.current = null;
   $('game').classList.add('hidden');
   $('results').classList.remove('hidden');
-  $('finalScore').textContent = state.score;
-  $('finalTotal').textContent = state.right + state.wrong;
-  const total = state.right + state.wrong;
-  const acc = total ? Math.round(state.right * 100 / total) : 0;
-  $('accuracy').textContent = `${acc}% accuracy · ${(state.score / state.duration * 60).toFixed(1)} per minute`;
+  const scoredHistory = getScoredHistory();
+  const unscored = state.history.filter(h => h.scored === false).length;
+  const total = scoredHistory.length;
+  const scoredRight = scoredHistory.filter(h => h.correct).length;
+  $('finalScore').textContent = scoredRight;
+  $('finalTotal').textContent = total;
+  const acc = total ? Math.round(scoredRight * 100 / total) : 0;
+  $('accuracy').textContent =
+    `${acc}% accuracy · ${(scoredRight / state.duration * 60).toFixed(1)} per minute` +
+    (unscored ? ` · ${unscored} timed out (unscored)` : '');
 
   const tally = {};
-  state.history.forEach(h => {
+  scoredHistory.forEach(h => {
     if (!tally[h.key]) tally[h.key] = { right: 0, total: 0 };
     tally[h.key].total++;
     if (h.correct) tally[h.key].right++;
   });
-  let html = '<table>';
+  const table = document.createElement('table');
   Object.keys(tally).forEach(k => {
     const t = tally[k];
-    html += `<tr><td>${GENERATORS[k].name}</td><td>${t.right} / ${t.total}</td></tr>`;
+    const tr = document.createElement('tr');
+    const name = document.createElement('td');
+    name.textContent = GENERATORS[k].name;
+    const score = document.createElement('td');
+    score.textContent = `${t.right} / ${t.total}`;
+    tr.append(name, score);
+    table.appendChild(tr);
   });
-  html += '</table>';
-  $('breakdown').innerHTML = html;
+  $('breakdown').replaceChildren(table);
 
   const recap = state.history.slice().reverse();
-  let r = '';
+  const recapHost = $('recap');
+  recapHost.replaceChildren();
   recap.forEach(h => {
-    const mark = h.timedOut ? '⌛' : (h.correct ? '✓' : '✗');
-    const markCls = h.correct ? 'good' : 'bad';
-    const yoursCls = h.correct ? '' : 'bad';
-    r += `<div class="recap-item">
-      <span class="mark ${markCls}">${mark}</span>
-      <span class="q-cell"></span>
-      <span class="yours ${yoursCls}">${(h.user || '—').replace(/</g,'&lt;')}${!h.correct ? ` <span style="color:var(--muted)">(was ${h.answer.replace(/</g,'&lt;')})</span>` : ''}</span>
-    </div>`;
-  });
-  $('recap').innerHTML = r;
-  [...$$('#recap .q-cell')].forEach((cell, i) => {
-    renderTeX(cell, recap[i].display);
+    const row = document.createElement('div');
+    row.className = 'recap-item';
+
+    const mark = document.createElement('span');
+    mark.className = `mark ${h.correct ? 'good' : 'bad'}`;
+    mark.textContent = h.timedOut ? '⌛' : (h.correct ? '✓' : '✗');
+
+    const qCell = document.createElement('span');
+    qCell.className = 'q-cell';
+
+    const yours = document.createElement('span');
+    yours.className = `yours ${h.correct ? '' : 'bad'}`.trim();
+    yours.textContent = h.user || '—';
+    if (!h.correct) {
+      const note = document.createElement('span');
+      note.style.color = 'var(--muted)';
+      note.textContent = ` (was ${h.answer})`;
+      yours.appendChild(note);
+    }
+
+    row.append(mark, qCell, yours);
+    renderQuestion(qCell, h);
+    recapHost.appendChild(row);
   });
 
   // Save this session + flag a new personal best (correct/min)
@@ -1534,7 +2229,7 @@ function bindInput() {
   const inp = $('answer');
   inp.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); submitAnswer(false); return; }
-    if (e.key === 'Tab')   { e.preventDefault(); submitAnswer(true);  return; }
+    if (e.key === 'Escape') { e.preventDefault(); submitAnswer(true);  return; }
     if (e.shiftKey && (e.key === 'S' || e.key === 's')) {
       e.preventDefault(); insertAtCursor(inp, '√'); updatePreview(); return;
     }
@@ -1543,6 +2238,13 @@ function bindInput() {
     }
   });
   inp.addEventListener('input', updatePreview);
+  $$('.input-tools [data-insert]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      insertAtCursor(inp, btn.dataset.insert);
+      updatePreview();
+      inp.focus();
+    });
+  });
 }
 
 function updatePreview() {
@@ -1568,38 +2270,192 @@ function inputToTeX(s) {
 // PROGRESS TRACKING + BEST SCORES (localStorage, on-device)
 //=========================================================
 const STORE_KEY = 'tmuaDrillHistoryV1';
+const HISTORY_SCHEMA_VERSION = 2;
 const MAX_HISTORY = 300;
 
 const SKILL_GROUP = {};
 const GROUP_LABEL = {};
-GROUPS.forEach(g => { GROUP_LABEL[g.key] = g.label; g.items.forEach(k => { SKILL_GROUP[k] = g.key; }); });
+const SKILL_LABEL = {};
+GROUPS.forEach(g => {
+  GROUP_LABEL[g.key] = g.label;
+  g.items.forEach(k => {
+    SKILL_GROUP[k] = g.key;
+    if (GENERATORS[k]) SKILL_LABEL[k] = GENERATORS[k].name;
+  });
+});
 
 function loadHistory() {
-  try { const raw = localStorage.getItem(STORE_KEY); return raw ? JSON.parse(raw) : []; }
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.map(sanitiseSession).filter(Boolean) : [];
+  }
   catch (e) { return []; }
 }
 function saveHistory(arr) {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(arr.slice(-MAX_HISTORY))); }
+  try {
+    const safeArr = Array.isArray(arr) ? arr : [];
+    localStorage.setItem(STORE_KEY, JSON.stringify(safeArr.slice(-MAX_HISTORY)));
+  }
   catch (e) { /* storage blocked/full — degrade silently */ }
+}
+function sanitiseSession(s) {
+  if (!s || typeof s !== 'object') return null;
+  const rec = {
+    schemaVersion: Number(s.schemaVersion || 1),
+    t: Number(s.t),
+    dur: Number(s.dur),
+    score: Number(s.score),
+    right: Number(s.right),
+    wrong: Number(s.wrong),
+    unscored: Number(s.unscored || 0),
+    perMin: Number(s.perMin),
+    acc: Number(s.acc),
+    byGroup: {},
+    bySkill: {},
+    misses: []
+  };
+  if (![rec.schemaVersion, rec.t, rec.dur, rec.score, rec.right, rec.wrong, rec.unscored, rec.perMin, rec.acc].every(Number.isFinite)) return null;
+  GROUPS.forEach(g => {
+    const v = s.byGroup && s.byGroup[g.key];
+    if (!v) return;
+    const r = Number(v.r), n = Number(v.n);
+    if (Number.isFinite(r) && Number.isFinite(n)) rec.byGroup[g.key] = { r, n };
+  });
+  Object.keys(GENERATORS).forEach(key => {
+    const v = s.bySkill && s.bySkill[key];
+    if (!v) return;
+    const r = Number(v.r), n = Number(v.n);
+    if (!Number.isFinite(r) || !Number.isFinite(n)) return;
+    const timedOut = Number(v.timedOut || 0);
+    const medianMs = Number(v.medianMs || 0);
+    const meanMs = Number(v.meanMs || 0);
+    const totalMs = Number(v.totalMs || 0);
+    const timeN = Number(v.timeN || 0);
+    const fastestMs = Number(v.fastestMs || 0);
+    const slowestMs = Number(v.slowestMs || 0);
+    const lastSeen = Number(v.lastSeen || 0);
+    const samplesMs = Array.isArray(v.samplesMs) ? boundedSample(v.samplesMs.map(Number), 20) : [];
+    if (!samplesMs.length && Number.isFinite(medianMs) && medianMs > 0) samplesMs.push(medianMs);
+    const safeTimeN = Number.isFinite(timeN) && timeN > 0 ? timeN : samplesMs.length;
+    const safeTotalMs = Number.isFinite(totalMs) && totalMs > 0
+      ? totalMs
+      : samplesMs.reduce((sum, x) => sum + x, 0);
+    rec.bySkill[key] = {
+      r, n,
+      timedOut: Number.isFinite(timedOut) ? timedOut : 0,
+      medianMs: Number.isFinite(medianMs) && medianMs > 0 ? medianMs : median(samplesMs),
+      meanMs: Number.isFinite(meanMs) && meanMs > 0 ? meanMs : (safeTimeN ? Math.round(safeTotalMs / safeTimeN) : 0),
+      totalMs: safeTotalMs,
+      timeN: safeTimeN,
+      fastestMs: Number.isFinite(fastestMs) && fastestMs > 0 ? fastestMs : (samplesMs.length ? Math.min(...samplesMs) : 0),
+      slowestMs: Number.isFinite(slowestMs) && slowestMs > 0 ? slowestMs : (samplesMs.length ? Math.max(...samplesMs) : 0),
+      samplesMs,
+      lastSeen: Number.isFinite(lastSeen) ? lastSeen : 0,
+      recent: Array.isArray(v.recent) ? v.recent.slice(-10).map(Boolean) : []
+    };
+  });
+  if (Array.isArray(s.misses)) {
+    rec.misses = s.misses
+      .map(m => ({
+        key: String(m.key || ''),
+        seed: String(m.seed || ''),
+        t: Number(m.t || s.t || 0)
+      }))
+      .filter(m => GENERATORS[m.key] && m.seed && Number.isFinite(m.t))
+      .slice(-40);
+  }
+  return rec;
+}
+function getScoredHistory() {
+  return state.history.filter(h => h.scored !== false);
+}
+function getDiagnosticHistory() {
+  return state.history;
+}
+function median(nums) {
+  const vals = nums.filter(Number.isFinite).slice().sort((a, b) => a - b);
+  if (!vals.length) return 0;
+  const mid = Math.floor(vals.length / 2);
+  return vals.length % 2 ? vals[mid] : Math.round((vals[mid - 1] + vals[mid]) / 2);
+}
+function boundedSample(nums, limit) {
+  return nums.filter(Number.isFinite).slice(-limit);
+}
+function buildBySkill(diagnosticHistory) {
+  const bySkill = {};
+  diagnosticHistory.forEach(h => {
+    if (!h.key) return;
+    const isScored = h.scored !== false;
+    const isTimedOut = h.timedOut === true || h.scored === false;
+    if (!isScored && !isTimedOut) return;
+    if (!bySkill[h.key]) bySkill[h.key] = { r: 0, n: 0, timedOut: 0, times: [], lastSeen: 0, recent: [] };
+    const s = bySkill[h.key];
+    if (isScored) {
+      s.n++;
+      if (h.correct) s.r++;
+      s.recent.push(!!h.correct);
+    }
+    if (isTimedOut) {
+      s.timedOut++;
+      s.recent.push(false);
+    }
+    if (Number.isFinite(h.ms)) s.times.push(h.ms);
+    if (Number.isFinite(h.t)) s.lastSeen = Math.max(s.lastSeen, h.t);
+    s.recent = s.recent.slice(-10);
+  });
+  Object.keys(bySkill).forEach(key => {
+    const s = bySkill[key];
+    const samplesMs = boundedSample(s.times, 20);
+    const totalMs = s.times.reduce((sum, x) => sum + x, 0);
+    bySkill[key] = {
+      r: s.r,
+      n: s.n,
+      timedOut: s.timedOut,
+      medianMs: median(s.times),
+      meanMs: s.times.length ? Math.round(totalMs / s.times.length) : 0,
+      totalMs,
+      timeN: s.times.length,
+      fastestMs: s.times.length ? Math.min(...s.times) : 0,
+      slowestMs: s.times.length ? Math.max(...s.times) : 0,
+      samplesMs,
+      lastSeen: s.lastSeen,
+      recent: s.recent
+    };
+  });
+  return bySkill;
 }
 
 function recordSession() {
   const byGroup = {};
-  state.history.forEach(h => {
+  const scoredHistory = getScoredHistory();
+  const diagnosticHistory = getDiagnosticHistory();
+  const bySkill = buildBySkill(diagnosticHistory);
+  scoredHistory.forEach(h => {
     const gk = SKILL_GROUP[h.key];
     if (!gk) return;
     if (!byGroup[gk]) byGroup[gk] = { r: 0, n: 0 };
     byGroup[gk].n++;
     if (h.correct) byGroup[gk].r++;
   });
-  const total = state.right + state.wrong;
-  const perMin = state.duration ? (state.score / state.duration * 60) : 0;
+  const total = scoredHistory.length;
+  const right = scoredHistory.filter(h => h.correct).length;
+  const unscored = state.history.filter(h => h.scored === false).length;
+  const perMin = state.duration ? (right / state.duration * 60) : 0;
+  const misses = diagnosticHistory
+    .filter(h => h.key && h.seed && (h.correct === false || h.timedOut === true))
+    .map(h => ({ key: h.key, seed: h.seed, t: Number.isFinite(h.t) ? h.t : Date.now() }))
+    .slice(-40);
   const rec = {
-    t: Date.now(), dur: state.duration, score: state.score,
-    right: state.right, wrong: state.wrong,
+    schemaVersion: HISTORY_SCHEMA_VERSION,
+    t: Date.now(), dur: state.duration, score: right,
+    right, wrong: total - right,
+    unscored,
     perMin: Math.round(perMin * 10) / 10,
-    acc: total ? Math.round(state.right * 100 / total) : 0,
-    byGroup
+    acc: total ? Math.round(right * 100 / total) : 0,
+    byGroup,
+    bySkill,
+    misses
   };
   const hist = loadHistory();
   const prevBest = hist.reduce((m, s) => Math.max(m, s.perMin || 0), 0);
@@ -1613,16 +2469,33 @@ function availableGroupsInHistory(hist) {
   hist.forEach(s => Object.keys(s.byGroup || {}).forEach(k => set.add(k)));
   return GROUPS.map(g => g.key).filter(k => set.has(k));
 }
+function availableSkillsInHistory(hist) {
+  const set = new Set();
+  hist.forEach(s => Object.keys(s.bySkill || {}).forEach(k => set.add(k)));
+  return Object.keys(GENERATORS).filter(k => set.has(k));
+}
 
 function buildMetricOptions() {
   const hist = loadHistory();
   const sel = $('metricSelect');
   const cur = sel.value;
-  let html = '<option value="__overall">Overall — correct per minute</option>';
+  sel.replaceChildren();
+  const overall = document.createElement('option');
+  overall.value = '__overall';
+  overall.textContent = 'Overall — correct per minute';
+  sel.appendChild(overall);
   availableGroupsInHistory(hist).forEach(gk => {
-    html += `<option value="${gk}">${GROUP_LABEL[gk] || gk} — accuracy %</option>`;
+    const opt = document.createElement('option');
+    opt.value = gk;
+    opt.textContent = `${GROUP_LABEL[gk] || gk} — accuracy %`;
+    sel.appendChild(opt);
   });
-  sel.innerHTML = html;
+  availableSkillsInHistory(hist).forEach(key => {
+    const opt = document.createElement('option');
+    opt.value = `skill:${key}`;
+    opt.textContent = `${SKILL_LABEL[key] || key} — skill accuracy %`;
+    sel.appendChild(opt);
+  });
   if (cur && [...sel.options].some(o => o.value === cur)) sel.value = cur;
 }
 
@@ -1632,6 +2505,10 @@ function seriesForMetric(metric) {
   hist.forEach((s, i) => {
     if (metric === '__overall') {
       pts.push({ x: i, y: s.perMin || 0, n: (s.right || 0) + (s.wrong || 0) });
+    } else if (metric.startsWith('skill:')) {
+      const key = metric.slice(6);
+      const sk = (s.bySkill || {})[key];
+      if (sk && sk.n > 0) pts.push({ x: i, y: Math.round(sk.r * 100 / sk.n), n: sk.n });
     } else {
       const g = (s.byGroup || {})[metric];
       if (g && g.n > 0) pts.push({ x: i, y: Math.round(g.r * 100 / g.n), n: g.n });
@@ -1645,8 +2522,10 @@ function drawProgressChart() {
   const isPct = metric !== '__overall';
   const pts = seriesForMetric(metric);
   const host = $('chart');
+  const tableHost = $('chartTable');
   if (pts.length === 0) {
     host.innerHTML = '<div class="empty">No data for this yet — play a round to start tracking.</div>';
+    if (tableHost) tableHost.replaceChildren();
     return;
   }
   const W = 640, H = 280, padL = 46, padR = 16, padT = 16, padB = 34;
@@ -1678,29 +2557,216 @@ function drawProgressChart() {
     `<text x="${W - padR}" y="${H - 6}" class="xlab" text-anchor="end">oldest → newest · ${pts.length} session${pts.length > 1 ? 's' : ''}</text>` +
     `<text transform="translate(13,${(padT + innerH / 2).toFixed(1)}) rotate(-90)" class="axislab" text-anchor="middle">${yLabel}</text>` +
     `</svg>`;
+  renderChartTable(tableHost, pts, isPct);
+}
+
+function renderChartTable(host, pts, isPct) {
+  if (!host) return;
+  const table = document.createElement('table');
+  table.setAttribute('aria-label', 'Progress chart data');
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  ['Session', 'Questions', isPct ? 'Accuracy' : 'Correct per minute'].forEach(label => {
+    const th = document.createElement('th');
+    th.textContent = label;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  pts.slice(-12).forEach((p, i) => {
+    const tr = document.createElement('tr');
+    const session = document.createElement('td');
+    session.textContent = `${pts.length - pts.slice(-12).length + i + 1}`;
+    const n = document.createElement('td');
+    n.textContent = `${p.n}`;
+    const y = document.createElement('td');
+    y.textContent = isPct ? `${p.y}%` : `${p.y}/min`;
+    tr.append(session, n, y);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  host.replaceChildren(table);
+}
+
+function aggregateSkillStats(hist) {
+  const agg = {};
+  hist.forEach(s => {
+    Object.entries(s.bySkill || {}).forEach(([key, v]) => {
+      if (!agg[key]) {
+        agg[key] = {
+          r: 0, n: 0, timedOut: 0,
+          totalMs: 0, timeN: 0, samplesMs: [],
+          fastestMs: 0, slowestMs: 0,
+          lastSeen: 0, recent: []
+        };
+      }
+      agg[key].r += v.r || 0;
+      agg[key].n += v.n || 0;
+      agg[key].timedOut += v.timedOut || 0;
+      const samples = Array.isArray(v.samplesMs) ? boundedSample(v.samplesMs.map(Number), 20) : [];
+      if (!samples.length && Number.isFinite(v.medianMs) && v.medianMs > 0) samples.push(v.medianMs);
+      agg[key].samplesMs.push(...samples);
+      agg[key].samplesMs = agg[key].samplesMs.slice(-200);
+      const timeN = Number(v.timeN || 0);
+      const totalMs = Number(v.totalMs || 0);
+      if (Number.isFinite(timeN) && timeN > 0 && Number.isFinite(totalMs) && totalMs > 0) {
+        agg[key].timeN += timeN;
+        agg[key].totalMs += totalMs;
+      } else if (samples.length) {
+        agg[key].timeN += samples.length;
+        agg[key].totalMs += samples.reduce((sum, x) => sum + x, 0);
+      }
+      const fastestMs = Number(v.fastestMs || 0);
+      const slowestMs = Number(v.slowestMs || 0);
+      if (Number.isFinite(fastestMs) && fastestMs > 0) {
+        agg[key].fastestMs = agg[key].fastestMs ? Math.min(agg[key].fastestMs, fastestMs) : fastestMs;
+      }
+      if (Number.isFinite(slowestMs) && slowestMs > 0) {
+        agg[key].slowestMs = Math.max(agg[key].slowestMs, slowestMs);
+      }
+      if (Number.isFinite(v.lastSeen)) agg[key].lastSeen = Math.max(agg[key].lastSeen, v.lastSeen);
+      if (Array.isArray(v.recent)) agg[key].recent = agg[key].recent.concat(v.recent.map(Boolean)).slice(-20);
+    });
+  });
+  Object.keys(agg).forEach(key => {
+    agg[key].acc = agg[key].n ? Math.round(agg[key].r * 100 / agg[key].n) : 0;
+    agg[key].medianMs = median(agg[key].samplesMs);
+    agg[key].meanMs = agg[key].timeN ? Math.round(agg[key].totalMs / agg[key].timeN) : 0;
+  });
+  return agg;
+}
+
+function readinessSnapshot(skillStats) {
+  const practiced = Object.entries(skillStats).filter(([, s]) => s.n >= 5);
+  const ready = practiced.filter(([key, s]) => {
+    const pace = s.meanMs || s.medianMs || 0;
+    return s.acc >= 80 && pace > 0 && pace <= targetMsForSkill(key) * 1.25 && (s.timedOut || 0) === 0;
+  });
+  return { practiced: practiced.length, ready: ready.length };
 }
 
 function renderBestPanel() {
   const hist = loadHistory();
   const host = $('bestPanel');
-  if (hist.length === 0) { host.innerHTML = ''; return; }
+  host.replaceChildren();
+  if (hist.length === 0) return;
   const bestPerMin = Math.max(...hist.map(s => s.perMin || 0));
   const grpBest = {};
   hist.forEach(s => Object.keys(s.byGroup || {}).forEach(gk => {
     const g = s.byGroup[gk];
-    if (g.n >= 3) {
+    if (g.n >= 10) {
       const a = g.r * 100 / g.n;
-      if (!(gk in grpBest) || a > grpBest[gk]) grpBest[gk] = a;
+      if (!(gk in grpBest) || a > grpBest[gk].acc) grpBest[gk] = { acc: a, n: g.n };
     }
   }));
-  let html = `<table><tbody><tr><td>Best score</td><td>${bestPerMin}/min</td></tr><tr><td>Sessions logged</td><td>${hist.length}</td></tr></tbody></table>`;
+
+  const summary = document.createElement('table');
+  const summaryBody = document.createElement('tbody');
+  [['Best score', `${bestPerMin}/min`], ['Sessions logged', `${hist.length}`]].forEach(([label, value]) => {
+    const tr = document.createElement('tr');
+    const tdLabel = document.createElement('td');
+    tdLabel.textContent = label;
+    const tdValue = document.createElement('td');
+    tdValue.textContent = value;
+    tr.append(tdLabel, tdValue);
+    summaryBody.appendChild(tr);
+  });
+  summary.appendChild(summaryBody);
+  host.appendChild(summary);
+
+  const skillStats = aggregateSkillStats(hist);
+  const ready = readinessSnapshot(skillStats);
+  const readySub = document.createElement('div');
+  readySub.className = 'best-sub';
+  readySub.textContent = 'TMUA fluency readiness snapshot';
+  host.appendChild(readySub);
+  const readyTable = document.createElement('table');
+  const readyBody = document.createElement('tbody');
+  [['Skills with at least 5 scored attempts', `${ready.practiced}`], ['Currently at target pace and accuracy', `${ready.ready}`]].forEach(([label, value]) => {
+    const tr = document.createElement('tr');
+    const tdLabel = document.createElement('td');
+    tdLabel.textContent = label;
+    const tdValue = document.createElement('td');
+    tdValue.textContent = value;
+    tr.append(tdLabel, tdValue);
+    readyBody.appendChild(tr);
+  });
+  readyTable.appendChild(readyBody);
+  host.appendChild(readyTable);
+
   const gks = GROUPS.map(g => g.key).filter(k => k in grpBest);
   if (gks.length) {
-    html += '<div class="best-sub">Best accuracy by group (sessions with ≥3 questions in that group)</div><table><tbody>';
-    gks.forEach(gk => { html += `<tr><td>${GROUP_LABEL[gk] || gk}</td><td>${Math.round(grpBest[gk])}%</td></tr>`; });
-    html += '</tbody></table>';
+    const sub = document.createElement('div');
+    sub.className = 'best-sub';
+    sub.textContent = 'Best accuracy by group (sessions with at least 10 questions in that group)';
+    host.appendChild(sub);
+    const table = document.createElement('table');
+    const body = document.createElement('tbody');
+    gks.forEach(gk => {
+      const tr = document.createElement('tr');
+      const name = document.createElement('td');
+      name.textContent = GROUP_LABEL[gk] || gk;
+      const val = document.createElement('td');
+      val.textContent = `${Math.round(grpBest[gk].acc)}% over ${grpBest[gk].n} Qs`;
+      tr.append(name, val);
+      body.appendChild(tr);
+    });
+    table.appendChild(body);
+    host.appendChild(table);
   }
-  host.innerHTML = html;
+
+  const skills = Object.entries(skillStats)
+    .filter(([, s]) => s.n >= 5)
+    .sort((a, b) => a[1].acc - b[1].acc || b[1].n - a[1].n)
+    .slice(0, 5);
+  if (skills.length) {
+    const sub = document.createElement('div');
+    sub.className = 'best-sub';
+    sub.textContent = 'Weakest skill snapshot (at least 5 questions)';
+    host.appendChild(sub);
+    const table = document.createElement('table');
+    const body = document.createElement('tbody');
+    skills.forEach(([key, s]) => {
+      const tr = document.createElement('tr');
+      const name = document.createElement('td');
+      name.textContent = SKILL_LABEL[key] || key;
+      const val = document.createElement('td');
+      val.textContent =
+        `${s.acc}% over ${s.n} scored` +
+        (s.timedOut ? ` · ${s.timedOut} timed out` : '') +
+        (s.medianMs ? ` · median ${(s.medianMs / 1000).toFixed(1)}s` : '');
+      tr.append(name, val);
+      body.appendChild(tr);
+    });
+    table.appendChild(body);
+    host.appendChild(table);
+  }
+
+  const slowSkills = Object.entries(skillStats)
+    .filter(([, s]) => s.n >= 5 && (s.meanMs || s.medianMs))
+    .sort((a, b) => ((b[1].meanMs || b[1].medianMs) / targetMsForSkill(b[0])) - ((a[1].meanMs || a[1].medianMs) / targetMsForSkill(a[0])))
+    .slice(0, 5);
+  if (slowSkills.length) {
+    const sub = document.createElement('div');
+    sub.className = 'best-sub';
+    sub.textContent = 'Weakest by speed (relative to target pace)';
+    host.appendChild(sub);
+    const table = document.createElement('table');
+    const body = document.createElement('tbody');
+    slowSkills.forEach(([key, s]) => {
+      const tr = document.createElement('tr');
+      const name = document.createElement('td');
+      name.textContent = SKILL_LABEL[key] || key;
+      const val = document.createElement('td');
+      const pace = s.meanMs || s.medianMs;
+      val.textContent = `${(pace / 1000).toFixed(1)}s avg · target ${(targetMsForSkill(key) / 1000).toFixed(1)}s`;
+      tr.append(name, val);
+      body.appendChild(tr);
+    });
+    table.appendChild(body);
+    host.appendChild(table);
+  }
 }
 
 function showProgress() {
@@ -1713,10 +2779,115 @@ function showProgress() {
   renderBestPanel();
 }
 
+function setProgressStatus(text) {
+  const el = $('progressStatus');
+  if (el) el.textContent = text;
+}
+
+function downloadText(filename, mime, text) {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportProgressJson() {
+  const hist = loadHistory();
+  const payload = {
+    app: 'tmua-drill',
+    schemaVersion: HISTORY_SCHEMA_VERSION,
+    exportedAt: new Date().toISOString(),
+    sessions: hist
+  };
+  downloadText('tmua-drill-progress.json', 'application/json', JSON.stringify(payload, null, 2));
+  setProgressStatus(`Exported ${hist.length} session${hist.length === 1 ? '' : 's'} as JSON.`);
+}
+
+function csvCell(value) {
+  const s = value == null ? '' : String(value);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function exportProgressCsv() {
+  const hist = loadHistory();
+  const headers = [
+    'session_index', 'date', 'duration_s', 'score', 'right', 'wrong', 'unscored',
+    'per_min', 'accuracy_pct', 'skill_key', 'skill_name', 'target_ms',
+    'skill_right', 'skill_scored', 'skill_timed_out', 'skill_accuracy_pct',
+    'mean_ms', 'median_ms'
+  ];
+  const rows = [headers];
+  hist.forEach((s, i) => {
+    const skills = Object.entries(s.bySkill || {});
+    if (!skills.length) {
+      rows.push([i + 1, new Date(s.t).toISOString(), s.dur, s.score, s.right, s.wrong, s.unscored, s.perMin, s.acc, '', '', '', '', '', '', '', '', '']);
+      return;
+    }
+    skills.forEach(([key, sk]) => {
+      rows.push([
+        i + 1,
+        new Date(s.t).toISOString(),
+        s.dur,
+        s.score,
+        s.right,
+        s.wrong,
+        s.unscored,
+        s.perMin,
+        s.acc,
+        key,
+        SKILL_LABEL[key] || key,
+        targetMsForSkill(key),
+        sk.r || 0,
+        sk.n || 0,
+        sk.timedOut || 0,
+        sk.n ? Math.round((sk.r || 0) * 100 / sk.n) : '',
+        sk.meanMs || '',
+        sk.medianMs || ''
+      ]);
+    });
+  });
+  const csv = rows.map(row => row.map(csvCell).join(',')).join('\n') + '\n';
+  downloadText('tmua-drill-progress.csv', 'text/csv', csv);
+  setProgressStatus(`Exported ${hist.length} session${hist.length === 1 ? '' : 's'} as CSV.`);
+}
+
+function importedSessionsFromPayload(parsed) {
+  const sessions = Array.isArray(parsed) ? parsed : parsed && Array.isArray(parsed.sessions) ? parsed.sessions : null;
+  if (!sessions) return null;
+  return sessions.map(sanitiseSession).filter(Boolean);
+}
+
+function importProgressFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result || ''));
+      const imported = importedSessionsFromPayload(parsed);
+      if (!imported) throw new Error('No sessions array found.');
+      const existing = loadHistory();
+      saveHistory(existing.concat(imported).slice(-MAX_HISTORY));
+      buildMetricOptions();
+      drawProgressChart();
+      renderBestPanel();
+      setProgressStatus(`Imported ${imported.length} session${imported.length === 1 ? '' : 's'}.`);
+    } catch (e) {
+      setProgressStatus('Import failed: choose a valid TMUA Drill JSON export.');
+    }
+  };
+  reader.readAsText(file);
+}
+
 function clearHistory() {
   if (!confirm('Delete all saved progress on this device? This cannot be undone.')) return;
   try { localStorage.removeItem(STORE_KEY); } catch (e) {}
   buildMetricOptions(); drawProgressChart(); renderBestPanel();
+  setProgressStatus('Saved progress cleared.');
 }
 
 //=========================================================
@@ -1740,6 +2911,13 @@ $('progressBackBtn').addEventListener('click', () => {
   $('setup').classList.remove('hidden');
 });
 $('metricSelect').addEventListener('change', drawProgressChart);
+$('exportJsonBtn').addEventListener('click', exportProgressJson);
+$('exportCsvBtn').addEventListener('click', exportProgressCsv);
+$('importProgressBtn').addEventListener('click', () => $('importProgressFile').click());
+$('importProgressFile').addEventListener('change', (e) => {
+  importProgressFile(e.target.files && e.target.files[0]);
+  e.target.value = '';
+});
 $('clearHistoryBtn').addEventListener('click', clearHistory);
 </script>
 </body>
