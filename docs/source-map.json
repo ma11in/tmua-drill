@@ -1,0 +1,532 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-05",
+  "purpose": "Maps each question generator to the source material that supports the README's TMUA no-calculator fluency claim.",
+  "claimLevels": {
+    "official-direct": "The generator directly drills a named topic or skill in the TMUA specification or Notes on Logic and Proof.",
+    "official-adjacent": "The generator drills a narrow fluency move used inside a named TMUA topic, but the exact micro-drill is not itself named.",
+    "fluency-support": "The generator supports no-calculator speed or prerequisite fluency, but should not be presented as a direct TMUA syllabus item."
+  },
+  "sources": [
+    {
+      "id": "spec-2021",
+      "type": "local-pdf",
+      "path": "tmua papers/TMUA Specification 2021.pdf",
+      "notes": "Used for local source mapping of test structure, Section 1 mathematics content, and Section 2 Paper 2 logic/proof scope."
+    },
+    {
+      "id": "logic-notes-2021",
+      "type": "local-pdf",
+      "path": "tmua papers/TMUA Notes on Logic and Proof 2021.pdf",
+      "notes": "Used for the logic generator mapping: necessary/sufficient, converse/contrapositive, quantifiers, negation, and counterexample/disproof patterns."
+    },
+    {
+      "id": "uat-tmua-2026",
+      "type": "official-web",
+      "url": "https://esat-tmua.ac.uk/about-the-tests/tmua-test/",
+      "checkedDate": "2026-06-05",
+      "notes": "Used for current public framing that TMUA prep should include the specification, Notes on Logic and Proof, and timed practice tests."
+    },
+    {
+      "id": "uat-prepare-2026",
+      "type": "official-web",
+      "url": "https://esat-tmua.ac.uk/prepare/",
+      "checkedDate": "2026-06-05",
+      "notes": "Used for current public framing of TMUA preparation materials."
+    }
+  ],
+  "generators": [
+    {
+      "generatorKey": "add",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Order, add, subtract, multiply and divide whole numbers, integers, fractions, decimals, and numbers in index form." }
+      ]
+    },
+    {
+      "generatorKey": "sub",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Order, add, subtract, multiply and divide whole numbers, integers, fractions, decimals, and numbers in index form." }
+      ]
+    },
+    {
+      "generatorKey": "mul",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Order, add, subtract, multiply and divide whole numbers, integers, fractions, decimals, and numbers in index form." }
+      ]
+    },
+    {
+      "generatorKey": "div",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Order, add, subtract, multiply and divide whole numbers, integers, fractions, decimals, and numbers in index form." }
+      ]
+    },
+    {
+      "generatorKey": "fractions",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Understand equivalent fractions; convert between fractions, decimals, and percentages." }
+      ]
+    },
+    {
+      "generatorKey": "percent",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Understand and use percentage including repeated proportional change and calculating the original amount after a percentage change." }
+      ]
+    },
+    {
+      "generatorKey": "squares",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Use the terms square, positive and negative square root, cube and cube root." }
+      ]
+    },
+    {
+      "generatorKey": "cubes",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Use the terms square, positive and negative square root, cube and cube root." }
+      ]
+    },
+    {
+      "generatorKey": "powers2",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF1 / Part 2 Number", "ref": "Laws of indices for all rational exponents; use index laws to simplify, multiply, and divide integer, fractional, and negative powers." }
+      ]
+    },
+    {
+      "generatorKey": "binomCoef",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "SE4", "ref": "Binomial expansion and the notations n! and nCr." }
+      ]
+    },
+    {
+      "generatorKey": "smallPrimeFactor",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Use the concepts and vocabulary of factor, multiple, common factor, hcf, lcm, composite, prime number, and prime factor decomposition." }
+      ]
+    },
+    {
+      "generatorKey": "hcfLcm",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Use the concepts and vocabulary of highest common factor and least common multiple." }
+      ]
+    },
+    {
+      "generatorKey": "binaryToDecimal",
+      "claimLevel": "fluency-support",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "General place-value and no-calculator number fluency; binary conversion is not named in the specification." }
+      ]
+    },
+    {
+      "generatorKey": "simplifySurd",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF2 / Part 2 Number", "ref": "Use and manipulation of surds; simplifying expressions that contain surds." }
+      ]
+    },
+    {
+      "generatorKey": "rationalise",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF2 / Part 2 Number", "ref": "Rationalising the denominator." }
+      ]
+    },
+    {
+      "generatorKey": "expandSurdSq",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF2 and AF6", "ref": "Use and manipulation of surds; expanding brackets and collecting like terms." }
+      ]
+    },
+    {
+      "generatorKey": "expandBinomial",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF6 / Part 2 Algebra", "ref": "Expanding brackets and collecting like terms; expanding the product of two linear expressions." }
+      ]
+    },
+    {
+      "generatorKey": "factorRoots",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF3 / Part 2 Algebra", "ref": "Quadratic functions; solution of quadratic equations; factorise quadratics." }
+      ]
+    },
+    {
+      "generatorKey": "completeSq",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF3", "ref": "Completing the square." }
+      ]
+    },
+    {
+      "generatorKey": "discriminant",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF3", "ref": "The discriminant of a quadratic function." }
+      ]
+    },
+    {
+      "generatorKey": "substitute",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Algebra", "ref": "Derive a formula, substitute into a formula." }
+      ]
+    },
+    {
+      "generatorKey": "remainderTheorem",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF6", "ref": "Use of the Factor Theorem and the Remainder Theorem." }
+      ]
+    },
+    {
+      "generatorKey": "simultaneous",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF4 / Part 2 Algebra", "ref": "Simultaneous equations: analytical solution by substitution; set up and solve linear equations including simultaneous equations in two unknowns." }
+      ]
+    },
+    {
+      "generatorKey": "quadInequalityBounds",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF5", "ref": "Solution of linear and quadratic inequalities." }
+      ]
+    },
+    {
+      "generatorKey": "modulusEqn",
+      "claimLevel": "official-adjacent",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF7 / GF1", "ref": "Familiarity with f(x)=|x| and the modulus function graph." }
+      ]
+    },
+    {
+      "generatorKey": "indexLaws",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF1 / Part 2 Number", "ref": "Laws of indices; use index laws to simplify, multiply, and divide powers." }
+      ]
+    },
+    {
+      "generatorKey": "expSolve",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "EL3", "ref": "The solution of equations of the form a^x=b, and equations reducible to this form." }
+      ]
+    },
+    {
+      "generatorKey": "evalLog",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "EL2", "ref": "Definition and laws of logarithms, including log_a a = 1." }
+      ]
+    },
+    {
+      "generatorKey": "exactTrig",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "TR3", "ref": "Values of sine, cosine, and tangent for 0, 30, 45, 60, and 90 degrees." }
+      ]
+    },
+    {
+      "generatorKey": "doubleAngle",
+      "claimLevel": "official-adjacent",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "TR4-TR6", "ref": "Trigonometric functions, symmetries, identities, and simple equations; the exact double-angle micro-drill supports these but is not named as a formula requirement." }
+      ]
+    },
+    {
+      "generatorKey": "pythagIdentity",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "TR5", "ref": "Knowledge and use of tan(theta)=sin(theta)/cos(theta) and sin^2(theta)+cos^2(theta)=1." }
+      ]
+    },
+    {
+      "generatorKey": "cosineRule",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "TR1", "ref": "The sine and cosine rules." }
+      ]
+    },
+    {
+      "generatorKey": "triangleArea",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "TR1", "ref": "The area of a triangle in the form 1/2 ab sin C." }
+      ]
+    },
+    {
+      "generatorKey": "countTrigSolns",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "TR6", "ref": "Solution of simple trigonometric equations in a given interval." }
+      ]
+    },
+    {
+      "generatorKey": "trigPeriodMax",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "TR4 / GF1", "ref": "Sine, cosine, and tangent functions; graphs, symmetries, and periodicity." }
+      ]
+    },
+    {
+      "generatorKey": "distance",
+      "claimLevel": "official-adjacent",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Coordinate geometry / Part 2 Geometry", "ref": "Cartesian coordinates and Pythagoras; distance formula fluency supports coordinate geometry." }
+      ]
+    },
+    {
+      "generatorKey": "midpoint",
+      "claimLevel": "official-adjacent",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Coordinate geometry", "ref": "Coordinate geometry in the (x,y) plane; midpoint is supporting coordinate fluency." }
+      ]
+    },
+    {
+      "generatorKey": "perpGradient",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "CG1 / Part 2 Algebra", "ref": "Conditions for two straight lines to be parallel or perpendicular; gradients of parallel and perpendicular lines." }
+      ]
+    },
+    {
+      "generatorKey": "lineEquation",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "CG1", "ref": "Equation of a straight line and finding equations of straight lines given information in various forms." }
+      ]
+    },
+    {
+      "generatorKey": "circleCentre",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "CG2", "ref": "Coordinate geometry of the circle using (x-a)^2+(y-b)^2=r^2 and x^2+y^2+cx+dy+e=0." }
+      ]
+    },
+    {
+      "generatorKey": "differentiate",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "DF1-DF2", "ref": "Derivative as gradient and differentiation of x^n for rational n and related sums/differences." }
+      ]
+    },
+    {
+      "generatorKey": "definiteIntegral",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "IN1-IN3", "ref": "Definite integration, integrating powers, and the Fundamental Theorem of Calculus." }
+      ]
+    },
+    {
+      "generatorKey": "trapeziumRule",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "IN5", "ref": "Approximation of the area under a curve using the trapezium rule." }
+      ]
+    },
+    {
+      "generatorKey": "stationaryPoint",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "DF3 / GF5", "ref": "Applications of differentiation to stationary points and using differentiation to determine graph shape." }
+      ]
+    },
+    {
+      "generatorKey": "apSum",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "SE2", "ref": "Arithmetic series, including the formula for the sum of the first n natural numbers." }
+      ]
+    },
+    {
+      "generatorKey": "recurrenceTerm",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "SE1", "ref": "Sequences generated by a simple recurrence relation of the form x_{n+1}=f(x_n)." }
+      ]
+    },
+    {
+      "generatorKey": "gpSumFinite",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "SE3", "ref": "The sum of a finite geometric series." }
+      ]
+    },
+    {
+      "generatorKey": "gpInfinity",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "SE3", "ref": "The sum to infinity of a convergent geometric series, including |r|<1." }
+      ]
+    },
+    {
+      "generatorKey": "compose",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "GF2 / AF7", "ref": "Compositions of transformations and familiarity with function mappings." }
+      ]
+    },
+    {
+      "generatorKey": "modulusEval",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF7 / GF1", "ref": "Familiarity with f(x)=|x| and the modulus function." }
+      ]
+    },
+    {
+      "generatorKey": "pythagoras",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Geometry", "ref": "Use Pythagoras' theorem in 2-dimensions and 3-dimensions." }
+      ]
+    },
+    {
+      "generatorKey": "circleArea",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Measures", "ref": "Find circumferences and areas of circles, including arcs, segments and sectors." }
+      ]
+    },
+    {
+      "generatorKey": "arcSector",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "TR2 / Measures", "ref": "Radian measure, including use for arc length and area of sector and segment; circles including arcs, segments and sectors." }
+      ]
+    },
+    {
+      "generatorKey": "polygonInteriorAngle",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Geometry", "ref": "Calculate and use the sums of the interior and exterior angles of polygons." }
+      ]
+    },
+    {
+      "generatorKey": "diffPower",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "DF2", "ref": "Differentiation of x^n for rational n and related sums and differences." }
+      ]
+    },
+    {
+      "generatorKey": "binomialCoeff",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "SE4", "ref": "Binomial expansion and coefficient notation." }
+      ]
+    },
+    {
+      "generatorKey": "solveSurdQuadratic",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF2-AF3", "ref": "Surds and solution of quadratic equations." }
+      ]
+    },
+    {
+      "generatorKey": "denestSurd",
+      "claimLevel": "official-adjacent",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF2", "ref": "Use and manipulation of surds; denesting is a stronger fluency extension rather than a named requirement." }
+      ]
+    },
+    {
+      "generatorKey": "changeBaseLog",
+      "claimLevel": "official-adjacent",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "EL2", "ref": "Logarithm laws and exact log evaluation; the 2021 specification says questions requiring the change-of-base formula will not be set, so this generator should be treated as adjacent fluency only." }
+      ]
+    },
+    {
+      "generatorKey": "combineLogs",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "EL2", "ref": "Laws of logarithms for combining sums, differences, and multiples of logs." }
+      ]
+    },
+    {
+      "generatorKey": "circleRadius",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "CG2", "ref": "Coordinate geometry of the circle using general and centre-radius forms." }
+      ]
+    },
+    {
+      "generatorKey": "diamondArea",
+      "claimLevel": "official-adjacent",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF7 / GF1 / Measures", "ref": "Modulus function familiarity and area fluency; area of |x|+|y|=k is not named directly." }
+      ]
+    },
+    {
+      "generatorKey": "modulusInequality",
+      "claimLevel": "official-adjacent",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "AF5 / AF7", "ref": "Linear inequalities and familiarity with f(x)=|x|; exact modulus inequality comparison is adjacent." }
+      ]
+    },
+    {
+      "generatorKey": "weightedAverage",
+      "claimLevel": "fluency-support",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Percentage, ratio, and proportion fluency; weighted-average mixtures are supporting no-calculator practice rather than a named generator target." }
+      ]
+    },
+    {
+      "generatorKey": "fractionMultiply",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Part 2 Number", "ref": "Order, add, subtract, multiply and divide fractions." }
+      ]
+    },
+    {
+      "generatorKey": "necessarySufficient",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Section 2 Arg2", "ref": "Understand and use the terms necessary and sufficient." },
+        { "sourceId": "logic-notes-2021", "section": "Arg2", "ref": "A is sufficient for B means if A then B; A is necessary for B means if B then A." }
+      ]
+    },
+    {
+      "generatorKey": "converseContrapositive",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Section 2 Arg1", "ref": "The converse and contrapositive of a statement; relationship between a statement and its converse/contrapositive." },
+        { "sourceId": "logic-notes-2021", "section": "Arg1", "ref": "Converse and contrapositive of if A then B." }
+      ]
+    },
+    {
+      "generatorKey": "quantifierNegation",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Section 2 Arg3-Arg4", "ref": "Use for all, for some, and there exists; negate statements using these terms." },
+        { "sourceId": "logic-notes-2021", "section": "Arg3", "ref": "not-(for all) is equivalent to (there exists) not; not-(there exists) is equivalent to (for all) not." }
+      ]
+    },
+    {
+      "generatorKey": "counterexamplePattern",
+      "claimLevel": "official-direct",
+      "sourceRefs": [
+        { "sourceId": "spec-2021", "section": "Section 2 Prf1", "ref": "Disproof by counterexample." },
+        { "sourceId": "logic-notes-2021", "section": "Prf1", "ref": "A counterexample to if A then B is an example where A is true and B is false." }
+      ]
+    }
+  ],
+  "claimBoundaries": [
+    "This map supports the README claim that the app drills broad TMUA no-calculator recall and fluency.",
+    "It does not support a claim that the app is complete TMUA preparation.",
+    "It does not claim to model full multi-step MCQs or a complete Paper 2 proof course."
+  ]
+}
