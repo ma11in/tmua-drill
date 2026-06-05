@@ -32,7 +32,7 @@ The skill set is designed with reference to the official TMUA specification, Not
 - **Sequences** — AP sum, recurrence terms, finite GP sum, GP sum to infinity
 - **Functions** — composition, evaluating modulus expressions
 - **Geometry formulas** — Pythagoras (scaled triples), circle area/circumference, arc/sector formulae in radians, regular-polygon interior angle
-- **Logic & proof fluency** — necessary/sufficient direction, converse/contrapositive, quantifier negation, counterexample patterns
+- **Logic & proof fluency** — necessary/sufficient direction, if/only-if/iff translation, converse/contrapositive, compound negation, quantifier negation, counterexample patterns, proof-error spotting
 
 Four presets are built in: **Zetamac classic**, **TMUA Tier 1**, **+ Tier 2**, and **Everything**.
 

@@ -4,7 +4,7 @@ Date: 2026-06-05
 
 ## Summary
 
-This pass checks the prep-ready sharing changes: source-backed scope wording, regression coverage, rendered desktop/mobile layout, logic multiple-choice display, results recap, progress view, and recent-miss review mode.
+This pass checks the prep-ready sharing changes: source-backed scope wording, regression coverage, rendered desktop/mobile layout, expanded logic multiple-choice display, results recap, progress view, and recent-miss review mode.
 
 Verdict: **passed for the tested surfaces**. The app is suitable to describe as a TMUA no-calculator fluency supplement, not a full TMUA paper simulator.
 
@@ -43,6 +43,7 @@ The regression harness now checks:
 - miss replay hooks;
 - export/import controls;
 - accessibility hooks;
+- richer logic prompt coverage and fresh-question repeat guard;
 - README source-map links and app scope disclaimer;
 - every generator in `index.html` has one entry in `docs/source-map.json`;
 - every source-map entry has a valid claim level and resolved source reference.
@@ -60,12 +61,13 @@ Checks:
 
 | Surface | Result |
 |---|---|
-| Desktop setup screen | Passed: title, scope disclaimer, 69 skill checkboxes, and the three practice modes rendered; no horizontal overflow detected. |
-| Desktop logic-only game | Passed: answer input focused, four logic choices rendered as separate tiles, and submitting `A` advanced the question while updating the wrong count. |
+| Desktop setup screen | Passed: title, scope disclaimer, 73 skill checkboxes, and the three practice modes rendered; no horizontal overflow detected. |
+| Desktop logic-only game | Passed: answer input focused, logic choices rendered as separate tiles, and submitting `A` advanced the question while updating the wrong count. |
+| Desktop expanded logic prompts | Passed: sampled prompts included only-if/iff translation, compound contrapositive/negation, and proof-error spotting; no consecutive duplicate prompt appeared in the sampled run. |
 | Desktop results recap | Passed: timed-out question shown as unscored, recap preserved logic choices, and skill breakdown rendered. |
 | Desktop progress view | Passed: progress screen rendered with chart/table area, best panel, and JSON/CSV/import controls. |
 | Mobile setup screen | Passed: skill grid collapsed to one column; no horizontal overflow detected. |
-| Mobile logic-only game | Passed: four logic choices rendered as one-column tiles within the viewport; no horizontal overflow detected. |
+| Mobile logic-only game | Passed: logic choices rendered as one-column tiles within the viewport; no horizontal overflow detected. |
 | Review recent misses | Passed: after a saved miss, `Review recent misses` started a review game and rendered the missed logic question. |
 | Console health | Passed: no browser console errors or warnings observed during the tested flows. |
 
