@@ -187,8 +187,12 @@ const checks = {
     app.includes('recentQuestionSignatures') &&
     app.includes('function rememberQuestionSignature') &&
     app.includes('function questionSignature') &&
-    app.includes('attempt < 24') &&
+    app.includes('attempt < 40') &&
     app.includes('!state.recentQuestionSignatures.includes(sig)'),
+  staleReplayFallbackGuardPresent:
+    app.includes('if (!q || !spec || (spec.replay && !replaySpecMatchesQuestion(spec, q, sig)))') &&
+    app.includes('spec = { key, seed: makeSeed(key), replay: false };') &&
+    app.includes('if (spec.replay && !replaySpecMatchesQuestion(spec, q, sig)) continue;'),
   sourceBackedGeneratorAddsPresent:
     ['remainderTheorem', 'lineEquation', 'trapeziumRule', 'recurrenceTerm', 'arcSector',
      'necessarySufficient', 'conditionalForms', 'converseContrapositive', 'compoundContrapositive',
