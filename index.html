@@ -2309,23 +2309,29 @@ function setAnswerStatus(text) {
 }
 
 function nextQuestion() {
-  let spec;
-  let q;
+  let spec = null;
+  let q = null;
   let sig = '';
   let fallback = null;
   let fallbackSpec = null;
   let fallbackSig = '';
-  for (let attempt = 0; attempt < 24; attempt++) {
+  for (let attempt = 0; attempt < 40; attempt++) {
     spec = chooseQuestionSpec();
     q = generateQuestion(spec.key, spec.seed);
     sig = questionSignature(q);
     if (spec.replay && !replaySpecMatchesQuestion(spec, q, sig)) continue;
-    if (!fallback || (!spec.replay && sig !== state.lastQuestionSignature)) {
+    if (!fallback) {
       fallback = q;
       fallbackSpec = spec;
       fallbackSig = sig;
     }
     if (spec.replay || !state.recentQuestionSignatures.includes(sig)) break;
+  }
+  if (!q || !spec || (spec.replay && !replaySpecMatchesQuestion(spec, q, sig))) {
+    const key = chooseQuestionKey();
+    spec = { key, seed: makeSeed(key), replay: false };
+    q = generateQuestion(spec.key, spec.seed);
+    sig = questionSignature(q);
   }
   if (state.recentQuestionSignatures.includes(sig) && fallback) {
     q = fallback;

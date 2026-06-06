@@ -41,6 +41,7 @@ The regression harness now checks:
 - timeout diagnostics;
 - per-skill timing aggregation;
 - miss replay hooks with generator version, answer, and signature metadata;
+- stale replay fallback so outdated replay candidates cannot leak through after retries;
 - import deduplication by session ID;
 - export/import controls;
 - accessibility hooks;
