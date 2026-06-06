@@ -46,6 +46,25 @@ const checks = {
     !ctx.checkAnswer('sqrt72', { answer: '6sqrt2', alts: ['6sqrt(2)', '6√2', '6 sqrt 2'], kind: 'expr' }),
   exactTrigDecimalRejected:
     !ctx.checkAnswer('0.5', { answer: '1/2', kind: 'expr', exactOnly: true }),
+  numericProductRejected:
+    !ctx.checkAnswer('1*2', { answer: '12', kind: 'numeric' }) &&
+    !ctx.checkAnswer('2*6', { answer: '12', kind: 'numeric' }),
+  implicitParenthesizedProductRejected:
+    !ctx.checkAnswer('1(2)', { answer: '12', kind: 'numeric' }),
+  wrappingParensStillAccepted:
+    ctx.checkAnswer('(12)', { answer: '12', kind: 'numeric' }) &&
+    ctx.checkAnswer('(2sqrt5)', { answer: '2sqrt5', kind: 'expr' }),
+  explicitSqrtMultiplicationAccepted:
+    ctx.checkAnswer('2*sqrt5', { answer: '2sqrt5', kind: 'expr' }) &&
+    ctx.checkAnswer('sqrt5*2', { answer: '2sqrt5', kind: 'expr' }),
+  explicitPiMultiplicationAccepted:
+    ctx.checkAnswer('16*pi', { answer: '16pi', kind: 'expr' }) &&
+    ctx.checkAnswer('pi*16', { answer: '16pi', kind: 'expr' }) &&
+    ctx.checkAnswer('(2*pi)/3', { answer: '2pi/3', kind: 'expr' }),
+  exactTermReorderAccepted:
+    ctx.checkAnswer('21+4sqrt5', { answer: '4sqrt5+21', kind: 'expr' }),
+  fractionDecimalEquivalenceAccepted:
+    ctx.checkAnswer('0.5', { answer: '1/2', kind: 'fraction' }),
   unicodeMinusAccepted:
     ctx.checkAnswer('−3', { answer: '-3', kind: 'numeric' }),
   reverseInequalityAccepted:

@@ -74,6 +74,36 @@ Checks:
 | Review recent misses | Passed: after a saved miss, `Review recent misses` started a review game and rendered the missed logic question. |
 | Console health | Passed: no browser console errors or warnings observed during the tested flows. |
 
+## Parser Patch QA Addendum
+
+Date: 2026-06-06
+
+Automated result:
+
+```txt
+ok: regression checks passed
+```
+
+Additional parser regressions checked in this pass:
+
+- `1*2` and `2*6` are rejected for the numeric answer `12`;
+- `1(2)` is rejected for the numeric answer `12`, while valid wrapping parentheses like `(12)` still work;
+- explicit exact multiplication is still accepted for `2*sqrt5`, `sqrt5*2`, `16*pi`, `pi*16`, and `(2*pi)/3`;
+- exact trig still rejects decimal `0.5` for the exact answer `1/2`;
+- ordinary fraction questions still accept decimal equivalence where appropriate;
+- additive exact terms still compare structurally, so `21+4sqrt5` is accepted for `4sqrt5+21`;
+- all generated canonical answers and listed alternatives still pass the checker.
+
+Rendered browser spot-check for this parser patch:
+
+| Surface | Result |
+|---|---|
+| Desktop setup | Passed: page identity matched `TMUA Mental Maths Drill`; setup screen rendered meaningful content; no console warnings/errors. |
+| Desktop game interaction | Passed: submitted a live recurrence answer through the visible answer input; score/right updated and `Correct` feedback rendered. |
+| Desktop results | Passed: final score, accuracy, unscored timeout, skill table, and recap rendered without visible overlap. |
+| Mobile setup | Passed at `390px x 844px`: first viewport readable; skill cards collapsed cleanly; no visible horizontal overflow. |
+| Mobile game | Passed at `390px x 844px`: question, answer box, helper buttons, and score row fit in the viewport; no console warnings/errors. |
+
 ## Remaining Unverified
 
 - Real Firefox and Safari rendering; this pass used the Codex in-app Browser only.
