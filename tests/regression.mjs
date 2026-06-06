@@ -49,6 +49,11 @@ const checks = {
   numericProductRejected:
     !ctx.checkAnswer('1*2', { answer: '12', kind: 'numeric' }) &&
     !ctx.checkAnswer('2*6', { answer: '12', kind: 'numeric' }),
+  implicitParenthesizedProductRejected:
+    !ctx.checkAnswer('1(2)', { answer: '12', kind: 'numeric' }),
+  wrappingParensStillAccepted:
+    ctx.checkAnswer('(12)', { answer: '12', kind: 'numeric' }) &&
+    ctx.checkAnswer('(2sqrt5)', { answer: '2sqrt5', kind: 'expr' }),
   explicitSqrtMultiplicationAccepted:
     ctx.checkAnswer('2*sqrt5', { answer: '2sqrt5', kind: 'expr' }) &&
     ctx.checkAnswer('sqrt5*2', { answer: '2sqrt5', kind: 'expr' }),

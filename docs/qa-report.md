@@ -87,6 +87,7 @@ ok: regression checks passed
 Additional parser regressions checked in this pass:
 
 - `1*2` and `2*6` are rejected for the numeric answer `12`;
+- `1(2)` is rejected for the numeric answer `12`, while valid wrapping parentheses like `(12)` still work;
 - explicit exact multiplication is still accepted for `2*sqrt5`, `sqrt5*2`, `16*pi`, `pi*16`, and `(2*pi)/3`;
 - exact trig still rejects decimal `0.5` for the exact answer `1/2`;
 - ordinary fraction questions still accept decimal equivalence where appropriate;
