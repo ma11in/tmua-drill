@@ -1862,84 +1862,323 @@ const GROUPS = [
 //=========================================================
 // ANSWER NORMALISATION + CHECKING
 //=========================================================
-function normalize(s) {
+function cleanInput(s) {
   return (s || '').toString().toLowerCase().trim()
+    .replace(/\\left|\\right/g, '')
     .replace(/\s+/g, '')
     .replace(/[−–—]/g, '-')
     .replace(/√/g, 'sqrt')
-    .replace(/π/g, 'pi')
+    .replace(/π|\\pi/g, 'pi')
     .replace(/\*\*/g, '^')
-    .replace(/×/g, '*')
-    .replace(/sqrt(\d+)\*(\d+)/g, '$2sqrt$1')   // commuted: sqrt5*2 -> 2sqrt5
-    .replace(/\*/g, '')   // accept explicit multiplication: 2*sqrt5 -> 2sqrt5, 16*pi -> 16pi
+    .replace(/×|·|\\times|\\cdot/g, '*')
     .replace(/÷/g, '/')
-    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1)/($2)')
-    .replace(/\\tfrac\{([^}]+)\}\{([^}]+)\}/g, '($1)/($2)');
+    .replace(/\\sqrt\{([^{}]+)\}/g, 'sqrt($1)')
+    .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '($1)/($2)')
+    .replace(/\\tfrac\{([^{}]+)\}\{([^{}]+)\}/g, '($1)/($2)');
 }
-function stripParens(s) { return s.replace(/[()]/g, ''); }
-function reorderAdditive(s) {
-  // Treat as sum of terms; sort terms after normalisation.
-  if (!s) return s;
-  let normed = s.startsWith('-') || s.startsWith('+') ? s : '+' + s;
-  const parts = normed.match(/[+-][^+-]+/g);
-  if (!parts || parts.length <= 1) return s;
-  return parts.sort().join('');
+
+function normalize(s) {
+  return cleanInput(s).replace(/sqrt\((-?\d+)\)/g, 'sqrt$1');
 }
-function asNumber(s) {
-  const n = normalize(s);
-  if (/^-?(\d+\.?\d*|\.\d+)$/.test(n)) return parseFloat(n);  // accepts 6, 0.5, .5
-  const m = n.match(/^(-?\d+)\/(-?\d+)$/);
-  if (m) {
-    const num = parseInt(m[1]), den = parseInt(m[2]);
-    if (den === 0) return NaN;
-    return num / den;
+
+function normalizeText(s) {
+  return normalize(s).replace(/[()]/g, '');
+}
+
+function gcdInt(a, b) {
+  a = Math.abs(a); b = Math.abs(b);
+  while (b) [a, b] = [b, a % b];
+  return a || 1;
+}
+
+function rat(n, d = 1) {
+  if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) return null;
+  if (!Number.isInteger(n) || !Number.isInteger(d)) return null;
+  if (d < 0) { n = -n; d = -d; }
+  const g = gcdInt(n, d);
+  return { n: n / g, d: d / g };
+}
+
+function ratAdd(a, b) { return rat(a.n * b.d + b.n * a.d, a.d * b.d); }
+function ratMul(a, b) { return rat(a.n * b.n, a.d * b.d); }
+function ratDiv(a, b) { return b.n === 0 ? null : rat(a.n * b.d, a.d * b.n); }
+function ratNeg(a) { return rat(-a.n, a.d); }
+function ratEq(a, b) { return !!a && !!b && a.n === b.n && a.d === b.d; }
+function ratLess(a, b) { return a.n * b.d < b.n * a.d; }
+function ratToNumber(a) { return a.n / a.d; }
+function ratToString(a) { return a.d === 1 ? `${a.n}` : `${a.n}/${a.d}`; }
+
+function splitTopLevel(s, separators) {
+  const out = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === '(') depth++;
+    if (ch === ')') depth--;
+    if (depth === 0 && separators.includes(ch)) {
+      out.push(s.slice(start, i));
+      start = i + 1;
+    }
   }
-  return NaN;
+  out.push(s.slice(start));
+  return out;
 }
+
+function findTopLevel(s, needle) {
+  let depth = 0;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === '(') depth++;
+    if (ch === ')') depth--;
+    if (depth === 0 && ch === needle) return i;
+  }
+  return -1;
+}
+
+function hasWrappingParens(s) {
+  if (!s.startsWith('(') || !s.endsWith(')')) return false;
+  let depth = 0;
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '(') depth++;
+    if (s[i] === ')') depth--;
+    if (depth === 0 && i < s.length - 1) return false;
+    if (depth < 0) return false;
+  }
+  return depth === 0;
+}
+
+function stripOuterParens(s) {
+  let out = s;
+  while (hasWrappingParens(out)) out = out.slice(1, -1);
+  return out;
+}
+
+function decimalToRat(s) {
+  const sign = s.startsWith('-') ? -1 : 1;
+  const body = s.replace(/^[+-]/, '');
+  const [wholeRaw, fracRaw = ''] = body.split('.');
+  const whole = wholeRaw === '' ? '0' : wholeRaw;
+  const den = 10 ** fracRaw.length;
+  const num = Number(whole) * den + Number(fracRaw || '0');
+  return rat(sign * num, den);
+}
+
+function parseRationalLiteral(raw) {
+  let s = stripOuterParens(cleanInput(raw));
+  if (!s || /[*^]|sqrt|pi/.test(s)) return null;
+  if (s.startsWith('+')) s = s.slice(1);
+  const dec = '[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)';
+  if (new RegExp(`^${dec}$`).test(s)) return s.includes('.') ? decimalToRat(s) : rat(Number(s), 1);
+  const parts = splitTopLevel(s, '/');
+  if (parts.length === 2 && parts[0] && parts[1]) {
+    const num = parseRationalLiteral(parts[0]);
+    const den = parseRationalLiteral(parts[1]);
+    return num && den ? ratDiv(num, den) : null;
+  }
+  return null;
+}
+
+function parseCoeff(raw, defaultCoeff = rat(1)) {
+  let s = stripOuterParens(raw || '');
+  if (!s || s === '+') return defaultCoeff;
+  if (s === '-') return ratNeg(defaultCoeff);
+  if (s.startsWith('*')) s = s.slice(1);
+  if (s.endsWith('*')) s = s.slice(0, -1);
+  if (!s || s === '+') return defaultCoeff;
+  if (s === '-') return ratNeg(defaultCoeff);
+  return parseRationalLiteral(s);
+}
+
+function parseBasisTerm(raw) {
+  let s = stripOuterParens(cleanInput(raw)).replace(/sqrt\((-?\d+)\)/g, 'sqrt$1');
+  if (!s) return null;
+
+  const divAt = findTopLevel(s, '/');
+  if (divAt > -1) {
+    const top = parseBasisTerm(s.slice(0, divAt));
+    const den = parseRationalLiteral(s.slice(divAt + 1));
+    if (!top || !den) return null;
+    const coeff = ratDiv(top.coeff, den);
+    return coeff ? { ...top, coeff } : null;
+  }
+
+  const sqrtMatch = s.match(/sqrt(-?\d+)/);
+  const piAt = s.indexOf('pi');
+  if (sqrtMatch && piAt > -1) return null;
+
+  if (sqrtMatch) {
+    if (s.indexOf('sqrt') !== sqrtMatch.index || s.indexOf('sqrt', sqrtMatch.index + 4) > -1) return null;
+    const before = s.slice(0, sqrtMatch.index);
+    const after = s.slice(sqrtMatch.index + sqrtMatch[0].length);
+    if (after && !after.startsWith('*')) return null;
+    const left = parseCoeff(before);
+    const right = parseCoeff(after);
+    if (!left || !right) return null;
+    return { basis: `sqrt:${Number(sqrtMatch[1])}`, coeff: ratMul(left, right) };
+  }
+
+  if (piAt > -1) {
+    if (s.indexOf('pi', piAt + 2) > -1) return null;
+    const before = s.slice(0, piAt);
+    const after = s.slice(piAt + 2);
+    if (after && !after.startsWith('*') && !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:\/[+-]?(?:\d+(?:\.\d*)?|\.\d+))?$/.test(after)) return null;
+    const left = parseCoeff(before);
+    const right = parseCoeff(after);
+    if (!left || !right) return null;
+    return { basis: 'pi', coeff: ratMul(left, right) };
+  }
+
+  const scalar = parseRationalLiteral(s);
+  return scalar ? { basis: '1', coeff: scalar } : null;
+}
+
+function splitAdditiveTerms(s) {
+  const out = [];
+  let depth = 0, start = 0;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === '(') depth++;
+    if (ch === ')') depth--;
+    if (depth === 0 && i > start && (ch === '+' || ch === '-')) {
+      out.push(s.slice(start, i));
+      start = i;
+    }
+  }
+  out.push(s.slice(start));
+  return out.filter(Boolean);
+}
+
+function parseExactExpression(raw) {
+  const s = stripOuterParens(cleanInput(raw));
+  if (!s || /[<>]=?|=/.test(s)) return null;
+  const terms = splitAdditiveTerms(s);
+  if (!terms.length) return null;
+  const map = new Map();
+  for (const termRaw of terms) {
+    const term = parseBasisTerm(termRaw);
+    if (!term) return null;
+    const prev = map.get(term.basis) || rat(0);
+    const next = ratAdd(prev, term.coeff);
+    if (!next) return null;
+    if (next.n === 0) map.delete(term.basis);
+    else map.set(term.basis, next);
+  }
+  if (!map.size) map.set('1', rat(0));
+  return map;
+}
+
+function exactKey(map) {
+  if (!map) return '';
+  return [...map.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([basis, coeff]) => `${basis}:${ratToString(coeff)}`)
+    .join('|');
+}
+
+function exactEqual(a, b) {
+  const pa = parseExactExpression(a);
+  const pb = parseExactExpression(b);
+  return !!pa && !!pb && exactKey(pa) === exactKey(pb);
+}
+
+function asNumber(s) {
+  const r = parseRationalLiteral(s);
+  return r ? ratToNumber(r) : NaN;
+}
+
 function looselyEqualNumeric(a, b) {
   const an = asNumber(a), bn = asNumber(b);
   if (!isNaN(an) && !isNaN(bn)) return Math.abs(an - bn) < 1e-9;
   return false;
 }
+
+function hasDecimalLiteral(s) {
+  return /(^|[^a-z])[-+]?(?:\d+\.\d*|\.\d+)/.test(cleanInput(s));
+}
+
+function parseSimpleIneq(raw) {
+  const s = stripOuterParens(cleanInput(raw));
+  let m = s.match(/^x([<>])(.+)$/);
+  if (m) {
+    const val = parseRationalLiteral(m[2]);
+    return val ? { dir: m[1], val } : null;
+  }
+  m = s.match(/^(.+)([<>])x$/);
+  if (m) {
+    const val = parseRationalLiteral(m[1]);
+    if (!val) return null;
+    return { dir: m[2] === '>' ? '<' : '>', val };
+  }
+  return null;
+}
+
 function canonicalIneq(s) {
   const raw = normalize(s);
-  let n = raw.replace(/and/g, ',');
-  let m;
-  const num = '-?(?:\\d+\\.?\\d*|\\.\\d+)';
-  const fmt = x => `${Number(x)}`;
+  const andForm = raw.replace(/and/g, ',');
+  const fmt = ratToString;
+  let m = andForm.match(/^(.+)<x<(.+)$/);
+  if (m) {
+    const lo = parseRationalLiteral(m[1]);
+    const hi = parseRationalLiteral(m[2]);
+    return lo && hi && ratLess(lo, hi) ? `${fmt(lo)}<x<${fmt(hi)}` : raw;
+  }
 
-  if ((m = n.match(new RegExp(`^(${num})>x$`)))) return `x<${fmt(m[1])}`;
-  if ((m = n.match(new RegExp(`^(${num})<x$`)))) return `x>${fmt(m[1])}`;
-  if ((m = n.match(new RegExp(`^(${num})<x<(${num})$`)))) {
-    const a = Number(m[1]), b = Number(m[2]);
-    return a < b ? `${fmt(a)}<x<${fmt(b)}` : n;
+  const andParts = splitTopLevel(andForm, ',').filter(Boolean);
+  if (andParts.length === 2) {
+    const a = parseSimpleIneq(andParts[0]);
+    const b = parseSimpleIneq(andParts[1]);
+    if (a && b) {
+      const lower = a.dir === '>' ? a : b.dir === '>' ? b : null;
+      const upper = a.dir === '<' ? a : b.dir === '<' ? b : null;
+      if (lower && upper && ratLess(lower.val, upper.val)) {
+        return `${fmt(lower.val)}<x<${fmt(upper.val)}`;
+      }
+    }
   }
-  if ((m = n.match(new RegExp(`^x>(${num}),x<(${num})$`)))) {
-    const a = Number(m[1]), b = Number(m[2]);
-    return a < b ? `${fmt(a)}<x<${fmt(b)}` : n;
+
+  const orParts = raw.split('or').filter(Boolean);
+  if (orParts.length === 2) {
+    const a = parseSimpleIneq(orParts[0]);
+    const b = parseSimpleIneq(orParts[1]);
+    if (a && b) {
+      const upper = a.dir === '<' ? a : b.dir === '<' ? b : null;
+      const lower = a.dir === '>' ? a : b.dir === '>' ? b : null;
+      if (upper && lower && ratLess(upper.val, lower.val)) {
+        return `x<${fmt(upper.val)}orx>${fmt(lower.val)}`;
+      }
+    }
   }
-  if ((m = n.match(new RegExp(`^x<(${num}),x>(${num})$`)))) {
-    const a = Number(m[2]), b = Number(m[1]);
-    return a < b ? `${fmt(a)}<x<${fmt(b)}` : n;
-  }
-  if ((m = raw.match(new RegExp(`^x<(${num})orx>(${num})$`)))) {
-    const lo = Number(m[1]), hi = Number(m[2]);
-    return lo < hi ? `x<${fmt(lo)}orx>${fmt(hi)}` : raw;
-  }
-  if ((m = raw.match(new RegExp(`^x>(${num})orx<(${num})$`)))) {
-    const hi = Number(m[1]), lo = Number(m[2]);
-    return lo < hi ? `x<${fmt(lo)}orx>${fmt(hi)}` : raw;
-  }
-  return n;
+
+  const simple = parseSimpleIneq(raw);
+  if (simple) return `x${simple.dir}${fmt(simple.val)}`;
+  return andForm;
 }
+
+function parsePair(raw) {
+  const s = stripOuterParens(cleanInput(raw).replace(/and/g, ','));
+  const parts = splitTopLevel(s, ',').flatMap(part => splitTopLevel(part, ';')).filter(Boolean);
+  if (parts.length !== 2) return null;
+  const parsed = parts.map(part => parseExactExpression(part));
+  return parsed.every(Boolean) ? parsed : null;
+}
+
+function pairEqual(a, b) {
+  const pa = parsePair(a);
+  const pb = parsePair(b);
+  if (!pa || !pb) return false;
+  const ka = pa.map(exactKey).sort();
+  const kb = pb.map(exactKey).sort();
+  return ka[0] === kb[0] && ka[1] === kb[1];
+}
+
 function checkAnswer(userInput, q) {
   if (!userInput) return false;
   const candidates = [q.answer, ...(q.alts || [])];
-  const ui = normalize(userInput);
+  const ui = normalizeText(userInput);
   const uiIneq = canonicalIneq(userInput);
 
   for (const c of candidates) {
-    if (normalize(c) === ui) return true;
+    if (normalizeText(c) === ui) return true;
     if (canonicalIneq(c) === uiIneq) return true;
   }
   if (q.kind === 'numeric' || q.kind === 'fraction') {
@@ -1948,29 +2187,17 @@ function checkAnswer(userInput, q) {
     }
   }
   if (q.kind === 'pair') {
-    const splitPair = z => z.replace(/and/g, ',').split(/[,;]+/).filter(Boolean);
-    const parts = splitPair(ui);
-    if (parts.length === 2) {
-      for (const c of candidates) {
-        const cp = splitPair(normalize(c));
-        if (cp.length === 2 && parts.slice().sort().join(',') === cp.slice().sort().join(',')) return true;
-      }
+    for (const c of candidates) {
+      if (pairEqual(userInput, c)) return true;
     }
   }
   if (q.kind === 'expr') {
-    // 1) Strip parens, compare
-    for (const c of candidates) {
-      if (stripParens(normalize(c)) === stripParens(ui)) return true;
-    }
-    // 2) Term reorder (e.g. "21+4sqrt5" vs "4sqrt5+21")
-    const uiR = reorderAdditive(stripParens(ui));
-    for (const c of candidates) {
-      const cR = reorderAdditive(stripParens(normalize(c)));
-      if (uiR === cR) return true;
+    if (!q.exactOnly || !hasDecimalLiteral(userInput)) {
+      for (const c of candidates) {
+        if (exactEqual(userInput, c)) return true;
+      }
     }
     if (!q.exactOnly) {
-      // 3) Numeric equivalence for pure rational/decimal answers (e.g. 0.5 vs 1/2).
-      //    Surd/pi answers parse to NaN, so this never falsely accepts a decimal for √ or π.
       for (const c of candidates) {
         if (looselyEqualNumeric(userInput, c)) return true;
       }
