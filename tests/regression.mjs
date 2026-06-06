@@ -14,10 +14,12 @@ if (!match) throw new Error('Could not find app script in index.html');
 const katexCode = katexMatch[1];
 const app = match[1];
 new Function(app);
+const generatorVersionMatch = app.match(/const GENERATOR_VERSION = (\d+);/);
+if (!generatorVersionMatch) throw new Error('Could not find generator version constant');
 
 const core = app.slice(0, app.indexOf('//=========================================================\n// UI POPULATION'));
 const progressStart = app.indexOf('const STORE_KEY');
-const progressEnd = app.indexOf('function renderBestPanel');
+const progressEnd = app.indexOf('//=========================================================\n// INIT');
 const storage = { value: null };
 const ctx = {
   document: { getElementById() {}, querySelectorAll() {} },
@@ -31,9 +33,11 @@ vm.createContext(ctx);
 vm.runInContext(katexCode, ctx);
 vm.runInContext(
   core +
-  '\nthis.GENERATORS=GENERATORS; this.GROUPS=GROUPS; this.checkAnswer=checkAnswer; this.withSeededRandom=withSeededRandom; this.state={history:[], duration:120, score:99, right:99}; ' +
+  `\nconst GENERATOR_VERSION = ${generatorVersionMatch[1]};` +
+  "\nfunction questionSignature(q) { if (!q) return ''; return normalize(`${q.key}|${q.promptText || q.display}|${q.answer}`); }" +
+  '\nthis.GENERATORS=GENERATORS; this.GROUPS=GROUPS; this.GENERATOR_VERSION=GENERATOR_VERSION; this.checkAnswer=checkAnswer; this.withSeededRandom=withSeededRandom; this.questionSignature=questionSignature; this.state={history:[], duration:120, score:99, right:99}; ' +
   app.slice(progressStart, progressEnd) +
-  '\nthis.loadHistory=loadHistory; this.saveHistory=saveHistory; this.recordSession=recordSession; this.aggregateSkillStats=aggregateSkillStats; this.HISTORY_SCHEMA_VERSION=HISTORY_SCHEMA_VERSION;',
+  '\nthis.loadHistory=loadHistory; this.saveHistory=saveHistory; this.recordSession=recordSession; this.aggregateSkillStats=aggregateSkillStats; this.mergeHistories=mergeHistories; this.importedSessionsFromPayload=importedSessionsFromPayload; this.HISTORY_SCHEMA_VERSION=HISTORY_SCHEMA_VERSION;',
   ctx
 );
 
@@ -69,6 +73,8 @@ const checks = {
     ]);
     const hist = ctx.loadHistory();
     return hist.length === 1 &&
+      typeof hist[0].sessionId === 'string' &&
+      hist[0].sessionId.startsWith('session-') &&
       hist[0].byGroup.arith.r === 2 &&
       hist[0].unscored === 0 &&
       hist[0].misses.length === 1 &&
@@ -77,12 +83,13 @@ const checks = {
   recordSessionUsesDerivedSkillTiming: (() => {
     storage.value = '[]';
     ctx.state.history = [
-      { key: 'add', seed: 'right-seed', correct: true, scored: true, ms: 1200, t: 10 },
-      { key: 'add', seed: 'wrong-seed', correct: false, scored: true, ms: 2400, t: 20 },
-      { key: 'add', seed: 'timeout-seed', correct: false, scored: false, ms: 3000, t: 30 }
+      { key: 'add', seed: 'right-seed', generatorVersion: ctx.GENERATOR_VERSION, signature: 'add-right-sig', answer: '2', correct: true, scored: true, ms: 1200, t: 10 },
+      { key: 'add', seed: 'wrong-seed', generatorVersion: ctx.GENERATOR_VERSION, signature: 'add-wrong-sig', answer: '4', correct: false, scored: true, ms: 2400, t: 20 },
+      { key: 'add', seed: 'timeout-seed', generatorVersion: ctx.GENERATOR_VERSION, signature: 'add-timeout-sig', answer: '6', correct: false, scored: false, ms: 3000, t: 30 }
     ];
     const rec = ctx.recordSession().rec;
     return rec.schemaVersion === ctx.HISTORY_SCHEMA_VERSION &&
+      typeof rec.sessionId === 'string' &&
       rec.score === 1 &&
       rec.right === 1 &&
       rec.wrong === 1 &&
@@ -98,7 +105,27 @@ const checks = {
       rec.bySkill.add.lastSeen === 30 &&
       rec.bySkill.add.recent.join(',') === 'true,false,false' &&
       rec.misses.length === 2 &&
-      rec.misses.map(m => m.seed).join(',') === 'wrong-seed,timeout-seed';
+      rec.misses.map(m => m.seed).join(',') === 'wrong-seed,timeout-seed' &&
+      rec.misses.every(m =>
+        m.generatorVersion === ctx.GENERATOR_VERSION &&
+        m.signature &&
+        m.answer
+      );
+  })(),
+  importedSessionsDedupeBySessionId: (() => {
+    const base = {
+      sessionId: 'fixed-session',
+      schemaVersion: ctx.HISTORY_SCHEMA_VERSION,
+      t: 100, dur: 120, score: 1, right: 1, wrong: 0, unscored: 0,
+      perMin: 0.5, acc: 100, byGroup: { arith: { r: 1, n: 1 } }, bySkill: {}, misses: []
+    };
+    const imported = ctx.importedSessionsFromPayload({ sessions: [base, { ...base }] });
+    const mergedOnce = ctx.mergeHistories([], imported);
+    const mergedTwice = ctx.mergeHistories(mergedOnce, imported);
+    return imported.length === 2 &&
+      mergedOnce.length === 1 &&
+      mergedTwice.length === 1 &&
+      mergedTwice[0].sessionId === 'fixed-session';
   })(),
   seededGenerationIsRepeatable: (() => {
     const q1 = ctx.withSeededRandom('fixed-seed', () => ctx.GENERATORS.factorRoots.generate());
@@ -149,7 +176,12 @@ const checks = {
     app.includes('function buildReviewQueue') &&
     app.includes('function generateQuestion') &&
     app.includes('state.reviewQueue') &&
-    app.includes('seed: state.current.seed'),
+    app.includes('seed: state.current.seed') &&
+    app.includes('function replaySpecMatchesQuestion') &&
+    app.includes('signature: questionSignature(state.current)') &&
+    app.includes('generatorVersion: state.current'),
+  tier2PresetLabelMatchesContents:
+    html.includes('+ Tier 2 (coords + calc + sequences + logic)'),
   noImmediateFreshRepeatGuardPresent:
     app.includes('lastQuestionSignature') &&
     app.includes('recentQuestionSignatures') &&

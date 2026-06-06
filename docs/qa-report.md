@@ -4,7 +4,7 @@ Date: 2026-06-05
 
 ## Summary
 
-This pass checks the prep-ready sharing changes: source-backed scope wording, regression coverage, rendered desktop/mobile layout, expanded logic multiple-choice display, results recap, progress view, and recent-miss review mode.
+This pass checks the prep-ready sharing changes: source-backed scope wording, regression coverage, rendered desktop/mobile layout, expanded logic multiple-choice display, results recap, progress view, recent-miss review mode, and progress import/replay safeguards.
 
 Verdict: **passed for the tested surfaces**. The app is suitable to describe as a TMUA no-calculator fluency supplement, not a full TMUA paper simulator.
 
@@ -40,7 +40,8 @@ The regression harness now checks:
 - storage sanitisation;
 - timeout diagnostics;
 - per-skill timing aggregation;
-- miss replay hooks;
+- miss replay hooks with generator version, answer, and signature metadata;
+- import deduplication by session ID;
 - export/import controls;
 - accessibility hooks;
 - richer logic prompt coverage and fresh-question repeat guard;
@@ -62,6 +63,7 @@ Checks:
 | Surface | Result |
 |---|---|
 | Desktop setup screen | Passed: title, scope disclaimer, 73 skill checkboxes, and the three practice modes rendered; no horizontal overflow detected. |
+| Desktop preset labels | Passed: Tier 2 label now reads `+ Tier 2 (coords + calc + sequences + logic)`. |
 | Desktop logic-only game | Passed: answer input focused, logic choices rendered as separate tiles, and submitting `A` advanced the question while updating the wrong count. |
 | Desktop expanded logic prompts | Passed: sampled prompts included only-if/iff translation, compound contrapositive/negation, and proof-error spotting; no consecutive duplicate prompt appeared in the sampled run. |
 | Desktop results recap | Passed: timed-out question shown as unscored, recap preserved logic choices, and skill breakdown rendered. |
