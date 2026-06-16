@@ -48,6 +48,7 @@
   @media (max-width: 600px) { .skills { grid-template-columns: 1fr; } }
   .skill { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 13.5px; cursor: pointer; }
   .skill input { margin: 0; }
+  .skill-name { flex: 1; min-width: 0; }
   .skill .ex { color: var(--muted); font-size: 11.5px; }
   .controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
   .controls label { font-size: 14px; }
@@ -129,15 +130,30 @@
   .recap-item .logic-choices { grid-template-columns: 1fr; gap: 4px; }
   .recap-item .logic-choice { padding: 3px 6px; font-size: 12px; }
   .recap-item .logic-hint { display: none; }
-  .answer-row { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+  .answer-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+  }
   #answer {
+    grid-column: 2;
     font-size: 22px; padding: 10px 14px; width: 280px;
     border: 1.5px solid var(--border); border-radius: 6px;
     background: var(--card); color: var(--fg);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace; text-align: center;
   }
   #answer:focus { outline: none; border-color: var(--accent); }
-  #preview { font-size: 22px; min-width: 100px; min-height: 30px; color: var(--muted); }
+  #preview {
+    grid-column: 3;
+    justify-self: start;
+    font-size: 22px;
+    min-width: 0;
+    min-height: 30px;
+    max-width: min(240px, 100%);
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
   .sr-only {
     position: absolute;
     width: 1px;
@@ -173,6 +189,39 @@
     min-width: 44px; min-height: 44px; padding: 6px 10px;
     background: transparent; color: var(--accent); border: 1px solid var(--border);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .question-tools { margin-top: 10px; display: flex; justify-content: center; }
+  .method-btn, .method-chip, .method-mini {
+    background: transparent; color: var(--accent); border: 1px solid var(--border);
+    border-radius: 999px; font-weight: 500;
+  }
+  .method-btn { padding: 2px 7px; font-size: 11px; line-height: 1.2; }
+  .method-chip { padding: 5px 12px; font-size: 13px; }
+  .method-mini { margin-top: 6px; padding: 2px 8px; font-size: 11px; }
+  .method-backdrop {
+    position: fixed; inset: 0; z-index: 20; background: rgba(15, 23, 42, 0.32);
+    display: flex; justify-content: flex-end;
+  }
+  .method-drawer {
+    width: min(430px, 100%); min-height: 100%; box-sizing: border-box;
+    background: var(--bg); color: var(--fg); border-left: 1px solid var(--border);
+    box-shadow: -18px 0 40px rgba(15, 23, 42, 0.18);
+    padding: 22px; overflow-y: auto;
+  }
+  .method-head { display: flex; justify-content: space-between; gap: 14px; align-items: start; margin-bottom: 18px; }
+  .method-kicker { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0; }
+  .method-head h2 { margin: 2px 0 0; font-size: 22px; line-height: 1.2; }
+  .method-close { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 4px 10px; }
+  .method-section { margin: 16px 0; }
+  .method-section h3 { margin: 0 0 4px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0; }
+  .method-section p { margin: 0; font-size: 14px; line-height: 1.48; }
+  .method-example { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  @media (max-width: 600px) {
+    .method-backdrop { align-items: flex-end; justify-content: center; }
+    .method-drawer { width: 100%; min-height: 0; max-height: 84vh; border-left: 0; border-top: 1px solid var(--border); border-radius: 10px 10px 0 0; }
+    .answer-row { grid-template-columns: 1fr; justify-items: center; }
+    #answer, #preview { grid-column: 1; }
+    #preview { justify-self: center; text-align: center; max-width: 90vw; }
   }
   .help { margin-top: 22px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); font-size: 13px; color: var(--muted); text-align: left; }
   .help b { color: var(--fg); }
@@ -297,6 +346,9 @@
       <button type="button" data-insert=">" aria-label="Insert greater-than sign">&gt;</button>
       <button type="button" data-insert="," aria-label="Insert comma separator">,</button>
     </div>
+    <div class="question-tools">
+      <button type="button" class="method-chip" id="questionMethodBtn">Method</button>
+    </div>
     <div class="stats">
       <span>Score <b id="score">0</b></span>
       <span>Right <b class="good" id="rightCount">0</b></span>
@@ -345,6 +397,19 @@
     <p style="margin-top:18px"><button type="button" class="small-link link-button danger-link" id="clearHistoryBtn">Clear all saved progress</button></p>
   </div>
 
+</div>
+
+<div id="methodBackdrop" class="method-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="methodTitle">
+  <aside class="method-drawer">
+    <div class="method-head">
+      <div>
+        <div class="method-kicker">Mental move</div>
+        <h2 id="methodTitle"></h2>
+      </div>
+      <button type="button" class="method-close" id="methodCloseBtn" aria-label="Close method panel">Close</button>
+    </div>
+    <div id="methodBody"></div>
+  </aside>
 </div>
 
 <script>
@@ -440,6 +505,163 @@ function logicChoiceQuestion({ prompt, promptText, choices, hint, answer, alts =
     exactOnly: true
   };
 }
+function shuffledLogicChoices(options) {
+  const pool = options.map(option => ({ ...option }));
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const keys = ['A', 'B', 'C'];
+  const choices = pool.map((option, i) => ({ key: keys[i], text: option.text }));
+  const correctIndex = pool.findIndex(option => option.correct);
+  return { choices, answer: keys[correctIndex] };
+}
+const PROOF_ERROR_PATTERNS = [
+  {
+    promptText: 'A proof divides both sides by x. What must be checked?',
+    options: [
+      { text: 'x is not 0', correct: true },
+      { text: 'x is positive' },
+      { text: 'x is an integer' }
+    ]
+  },
+  {
+    promptText: 'A proof cancels x-2 from both sides. What case may be lost?',
+    options: [
+      { text: 'x = 2', correct: true },
+      { text: 'x is negative' },
+      { text: 'x is irrational' }
+    ]
+  },
+  {
+    promptText: 'A proof cancels a from ab = ac. What must be checked?',
+    options: [
+      { text: 'a is not 0', correct: true },
+      { text: 'b = c already' },
+      { text: 'a is positive' }
+    ]
+  },
+  {
+    promptText: 'A solution squares both sides of an equation. What must be checked?',
+    options: [
+      { text: 'solutions work in the original equation', correct: true },
+      { text: 'the answer is an integer' },
+      { text: 'both sides have the same units' }
+    ]
+  },
+  {
+    promptText: 'A proof replaces sqrt of x squared by x. What is missing?',
+    options: [
+      { text: 'it should be |x|', correct: true },
+      { text: 'x must be rational' },
+      { text: 'x must be even' }
+    ]
+  },
+  {
+    promptText: 'A proof says u squared > 1, so u > 1. What branch is missing?',
+    options: [
+      { text: 'u < -1', correct: true },
+      { text: 'u = 0' },
+      { text: '0 < u < 1' }
+    ]
+  },
+  {
+    promptText: 'A proof multiplies an inequality by a negative number. What changes?',
+    options: [
+      { text: 'the inequality sign reverses', correct: true },
+      { text: 'the variables swap names' },
+      { text: 'the inequality becomes equality' }
+    ]
+  },
+  {
+    promptText: 'A proof applies a decreasing function to both sides. What must happen?',
+    options: [
+      { text: 'reverse the inequality direction', correct: true },
+      { text: 'square both sides first' },
+      { text: 'ignore endpoint cases' }
+    ]
+  },
+  {
+    promptText: 'A proof takes reciprocals in an inequality. What condition is needed?',
+    options: [
+      { text: 'check signs and zero cases first', correct: true },
+      { text: 'both numbers must be integers' },
+      { text: 'the inequality direction never changes' }
+    ]
+  },
+  {
+    promptText: 'A proof says sin A = sin B, so A = B. What is the issue?',
+    options: [
+      { text: 'same sine does not force same angle', correct: true },
+      { text: 'sine is never negative' },
+      { text: 'angles cannot be equal' }
+    ]
+  },
+  {
+    promptText: 'A proof uses pq = 0, then assumes p = 0 and q = 0. What is wrong?',
+    options: [
+      { text: 'only at least one factor is zero', correct: true },
+      { text: 'neither factor can be zero' },
+      { text: 'p and q must be positive' }
+    ]
+  },
+  {
+    promptText: 'A proof uses pq = -1, then assumes p = -1 and q = 1. What is wrong?',
+    options: [
+      { text: 'many real factor pairs are possible', correct: true },
+      { text: 'no real factor pairs are possible' },
+      { text: 'both factors must be integers' }
+    ]
+  },
+  {
+    promptText: 'A proof checks n = 1,2,3 and concludes all n. What is missing?',
+    options: [
+      { text: 'a general argument', correct: true },
+      { text: 'decimal approximations' },
+      { text: 'a diagram' }
+    ]
+  },
+  {
+    promptText: 'To disprove P implies Q, what must a counterexample show?',
+    options: [
+      { text: 'P true and Q false', correct: true },
+      { text: 'P false and Q false' },
+      { text: 'P true and Q true' }
+    ]
+  },
+  {
+    promptText: 'A proof of P implies Q actually proves Q implies P. What is the flaw?',
+    options: [
+      { text: 'it proves the converse direction', correct: true },
+      { text: 'it proves the contrapositive' },
+      { text: 'it proves both directions' }
+    ]
+  },
+  {
+    promptText: 'A proof of P iff Q proves only P implies Q. What is missing?',
+    options: [
+      { text: 'the reverse implication', correct: true },
+      { text: 'a numerical example' },
+      { text: 'a sketch of the graph' }
+    ]
+  },
+  {
+    promptText: 'A proof combines inequalities by multiplying sides. What must be checked?',
+    options: [
+      { text: 'sign conditions make the step valid', correct: true },
+      { text: 'all values are prime' },
+      { text: 'the larger numbers are written first' }
+    ]
+  },
+  {
+    promptText: 'A proof says a polynomial is not factorable, so every value is prime. What is wrong?',
+    options: [
+      { text: 'polynomial factorisation is not primality', correct: true },
+      { text: 'prime numbers cannot be outputs' },
+      { text: 'all polynomials factor over integers' }
+    ]
+  }
+];
 // build polynomial display string like "2x^2-3x+5"
 function polyDisp(coefs) { // [a2, a1, a0]
   const parts = [];
@@ -730,7 +952,31 @@ const GENERATORS = {
         };
       }
     }},
-  simultaneous: { name: 'Solve 2×2 linear (for x)', group: 'algebra', example: 'x+y=5, 2x−y=4',
+  polynomialDivision: { name: 'Polynomial division', group: 'algebra', example: '(x³−6x²+11x−6) ÷ (x−2)',
+    generate() {
+      const q = [
+        pick([1, 1, 2, 3]),
+        pick([-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6]),
+        pick([-8,-6,-4,-2,0,2,4,6,8])
+      ];
+      const r = pick([-4,-3,-2,-1,1,2,3,4]);
+      const dividend = [
+        q[0],
+        q[1] - q[0] * r,
+        q[2] - q[1] * r,
+        -q[2] * r
+      ];
+      const divisor = r >= 0 ? `x-${r}` : `x+${-r}`;
+      const ans = polyDisp(q);
+      return {
+        display: `${polyDisp(dividend)}\\;\\div\\;(${divisor});\\;\\text{quotient}?`,
+        answer: ans,
+        alts: [`(${ans})`],
+        kind: 'expr',
+        exactOnly: true
+      };
+    }},
+  simultaneous: { name: 'Solve 2×2 linear', group: 'algebra', example: 'x+y=5, 2x−y=4',
     generate() {
       while (true) {
         const a1 = pick([1,2,3]), b1 = pick([-2,-1,1,2,3]);
@@ -745,7 +991,7 @@ const GENERATORS = {
         const a2s = a2 === 1 ? 'x' : (a2 === -1 ? '-x' : `${a2}x`);
         const b2s = b2 === 1 ? '+y' : (b2 === -1 ? '-y' : signed(b2) + 'y');
         return {
-          display: `${a1s}${b1s}=${c1},\\;${a2s}${b2s}=${c2};\\;${ask}=?`,
+          display: `\\begin{aligned}${a1s}${b1s}&=${c1}\\\\${a2s}${b2s}&=${c2}\\\\${ask}&=?\\end{aligned}`,
           answer: `${ask === 'x' ? x : y}`,
           kind: 'numeric'
         };
@@ -1197,7 +1443,7 @@ const GENERATORS = {
         };
       }
     }},
-  gpInfinity: { name: 'GP sum to infinity', group: 'sequences', example: 'a=8,r=½ → 16',
+  gpInfinity: { name: 'GP sum to infinity', group: 'sequences', example: '8 + 4 + 2 + ... has sum 16',
     generate() {
       while (true) {
         const cases = [
@@ -1212,11 +1458,13 @@ const GENERATORS = {
         if (sNum % denom !== 0) continue;
         const sum = sNum / denom;
         if (sum <= 0 || sum > 200) continue;
-        const rStr = c.rN === 1 ? `\\tfrac{1}{${c.rD}}` :
-                     c.rN === -1 ? `-\\tfrac{1}{${c.rD}}` :
-                     `\\tfrac{${c.rN}}{${c.rD}}`;
+        const terms = [0, 1, 2, 3].map(i => fracTeX(a * Math.pow(c.rN, i), Math.pow(c.rD, i)));
+        const series = terms.reduce((expr, term, i) => {
+          if (i === 0) return term;
+          return term.startsWith('-') ? `${expr} - ${term.slice(1)}` : `${expr} + ${term}`;
+        }, '');
         return {
-          display: `\\text{GP }a=${a},r=${rStr};\\;S_{\\infty}=?`,
+          display: `${series} + \\cdots;\\;S_{\\infty}=?`,
           answer: `${sum}`, kind: 'numeric'
         };
       }
@@ -1794,49 +2042,15 @@ const GENERATORS = {
     }},
   proofErrorSpotting: { name: 'Proof error spotting', group: 'logic', example: 'divide by x → check x is not 0',
     generate() {
-      const c = pick([
-        {
-          prompt: '\\text{A proof divides both sides by x. What must be checked?}',
-          promptText: 'A proof divides both sides by x. What must be checked?',
-          choices: [
-            { key: 'A', text: 'x is not 0' },
-            { key: 'B', text: 'x is positive' },
-            { key: 'C', text: 'x is an integer' }
-          ],
-          answer: 'A'
-        },
-        {
-          prompt: '\\text{A proof says sin A = sin B, so A = B. What is the issue?}',
-          promptText: 'A proof says sin A = sin B, so A = B. What is the issue?',
-          choices: [
-            { key: 'A', text: 'same sine does not force same angle' },
-            { key: 'B', text: 'sine is never negative' },
-            { key: 'C', text: 'angles cannot be equal' }
-          ],
-          answer: 'A'
-        },
-        {
-          prompt: '\\text{A proof cancels a from ab = ac. What must be checked?}',
-          promptText: 'A proof cancels a from ab = ac. What must be checked?',
-          choices: [
-            { key: 'A', text: 'a is not 0' },
-            { key: 'B', text: 'b = c already' },
-            { key: 'C', text: 'a is positive' }
-          ],
-          answer: 'A'
-        },
-        {
-          prompt: '\\text{A proof checks n = 1,2,3 and concludes all n. What is missing?}',
-          promptText: 'A proof checks n = 1,2,3 and concludes all n. What is missing?',
-          choices: [
-            { key: 'A', text: 'a general argument' },
-            { key: 'B', text: 'decimal approximations' },
-            { key: 'C', text: 'a diagram' }
-          ],
-          answer: 'A'
-        }
-      ]);
-      return logicChoiceQuestion({ ...c, hint: 'type A/B/C' });
+      const pattern = pick(PROOF_ERROR_PATTERNS);
+      const { choices, answer } = shuffledLogicChoices(pattern.options);
+      return logicChoiceQuestion({
+        prompt: `\\text{${texText(pattern.promptText)}}`,
+        promptText: pattern.promptText,
+        choices,
+        answer,
+        hint: 'type A/B/C'
+      });
     }},
 };
 
@@ -1848,7 +2062,7 @@ const GROUPS = [
   { key: 'recall',    label: 'Recall',                items: ['squares','cubes','powers2','binomCoef'] },
   { key: 'numtheory', label: 'Number theory',         items: ['smallPrimeFactor','hcfLcm','binaryToDecimal'] },
   { key: 'surds',     label: 'Surds',                 items: ['simplifySurd','rationalise','expandSurdSq','denestSurd'] },
-  { key: 'algebra',   label: 'Algebra',               items: ['expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','discriminant','substitute','remainderTheorem','simultaneous','quadInequalityBounds','modulusEqn','modulusInequality'] },
+  { key: 'algebra',   label: 'Algebra',               items: ['expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','discriminant','substitute','remainderTheorem','polynomialDivision','simultaneous','quadInequalityBounds','modulusEqn','modulusInequality'] },
   { key: 'idxlog',    label: 'Indices & logs',        items: ['indexLaws','expSolve','evalLog','changeBaseLog','combineLogs'] },
   { key: 'trig',      label: 'Trigonometry',          items: ['exactTrig','doubleAngle','pythagIdentity','cosineRule','triangleArea','countTrigSolns','trigPeriodMax'] },
   { key: 'coords',    label: 'Coordinate geometry',   items: ['distance','midpoint','perpGradient','lineEquation','circleCentre','circleRadius'] },
@@ -1858,6 +2072,436 @@ const GROUPS = [
   { key: 'geom',      label: 'Geometry formulas',     items: ['pythagoras','circleArea','arcSector','polygonInteriorAngle','diamondArea'] },
   { key: 'logic',     label: 'Logic & proof fluency', items: ['necessarySufficient','conditionalForms','converseContrapositive','compoundContrapositive','andOrNegation','quantifierNegation','counterexamplePattern','proofErrorSpotting'] },
 ];
+
+//=========================================================
+// MENTAL METHOD NOTES
+//=========================================================
+const METHODS = {
+  add: {
+    move: 'Split into tens and ones, or compensate to a round number.',
+    example: '47 + 38 = 47 + 40 - 2 = 85.',
+    watch: 'Undo the compensation exactly once.'
+  },
+  sub: {
+    move: 'Count up from the smaller number, or subtract via a nearby round number.',
+    example: '83 - 27 = 83 - 30 + 3 = 56.',
+    watch: 'Adding back after oversubtracting is the common sign slip.'
+  },
+  mul: {
+    move: 'Distribute around a friendly number, or factor one side first.',
+    example: '12 x 17 = 12 x (20 - 3) = 240 - 36 = 204.',
+    watch: 'Keep the bracket visible until the final subtraction.'
+  },
+  div: {
+    move: 'Reverse multiplication, or split the divisor into easy factors.',
+    example: '156 / 12 = (156 / 3) / 4 = 52 / 4 = 13.',
+    watch: 'Use factors whose product is the full divisor.'
+  },
+  fractions: {
+    move: 'Use a common denominator, then simplify the final fraction.',
+    example: '2/3 + 3/5 = (10 + 9)/15 = 19/15.',
+    watch: 'For subtraction, carry the minus through the whole numerator.'
+  },
+  fractionMultiply: {
+    move: 'Cancel diagonally before multiplying; for division, flip the second fraction.',
+    example: '(2/3) x (3/4) = 1/2.',
+    watch: 'Only flip for division, not multiplication.'
+  },
+  percent: {
+    move: 'Convert the percentage into benchmark chunks like 10%, 5%, 25%, 50%.',
+    example: '15% of 80 = 10% of 80 + 5% of 80 = 8 + 4 = 12.',
+    watch: 'Percent means per 100, so 40% is 0.4 of the number.'
+  },
+  weightedAverage: {
+    move: 'Use total weighted sum divided by total weight.',
+    example: 'Two values of 30 and three values of 5 give (2 x 30 + 3 x 5) / 5 = 15.',
+    watch: 'Divide by total weight, not by the number of different values.'
+  },
+  squares: {
+    move: 'Anchor at 10, 20, or 25 and use (n +/- a)^2.',
+    example: '17^2 = (20 - 3)^2 = 400 - 120 + 9 = 289.',
+    watch: 'The middle term is 2ab, not ab.'
+  },
+  cubes: {
+    move: 'Use a memorised cube or square then multiply by the base.',
+    example: '7^3 = 7^2 x 7 = 49 x 7 = 343.',
+    watch: 'Do not stop at the square.'
+  },
+  powers2: {
+    move: 'Build from known powers and exponent laws.',
+    example: '3^5 = 3^3 x 3^2 = 27 x 9 = 243.',
+    watch: 'When multiplying same bases, add exponents.'
+  },
+  binomCoef: {
+    move: 'Use symmetry, then multiply a short falling product over k factorial.',
+    example: 'C(8,3) = 8 x 7 x 6 / (3 x 2 x 1) = 56.',
+    watch: 'Use the smaller of k and n-k.'
+  },
+  smallPrimeFactor: {
+    move: 'Test divisibility by 2, 3, 5, then 7.',
+    example: '91 is not even, not divisible by 3 or 5, and 91 = 7 x 13.',
+    watch: 'Stop at the first prime factor.'
+  },
+  hcfLcm: {
+    move: 'Factor the numbers, or use lcm = ab / hcf once the hcf is known.',
+    example: 'HCF(36,48) = 12, so LCM = 36 x 48 / 12 = 144.',
+    watch: 'HCF is the shared part; LCM is the smallest shared multiple.'
+  },
+  binaryToDecimal: {
+    move: 'Use place values 32, 16, 8, 4, 2, 1, or repeated double-and-add.',
+    example: '1011_2 = 8 + 2 + 1 = 11.',
+    watch: 'Read place values from right to left.'
+  },
+  simplifySurd: {
+    move: 'Pull out the largest square factor.',
+    example: 'sqrt72 = sqrt(36 x 2) = 6sqrt2.',
+    watch: 'The final number under the square root should be square-free.'
+  },
+  rationalise: {
+    move: 'Multiply top and bottom by the square root in the denominator.',
+    example: '1/sqrt5 = sqrt5/5.',
+    watch: 'The denominator becomes the radicand.'
+  },
+  expandSurdSq: {
+    move: 'Use (a +/- bsqrtc)^2 = a^2 + b^2c +/- 2absqrtc.',
+    example: '(2 - sqrt3)^2 = 4 + 3 - 4sqrt3 = 7 - 4sqrt3.',
+    watch: 'Only the surd term changes sign.'
+  },
+  denestSurd: {
+    move: 'Match sqrt(A +/- BsqrtC) to p +/- qsqrtC by comparing square terms.',
+    example: 'sqrt(7 - 4sqrt3) = 2 - sqrt3 because (2 - sqrt3)^2 = 7 - 4sqrt3.',
+    watch: 'Check the sign of the surd term after squaring.'
+  },
+  expandBinomial: {
+    move: 'For (x+a)(x+b), middle coefficient is a+b and constant is ab.',
+    example: '(x+3)(x-5) = x^2 - 2x - 15.',
+    watch: 'Negative constants usually come from opposite signs.'
+  },
+  binomialCoeff: {
+    move: 'Coefficient of x^k is C(n,k) times the coefficient of x raised to k.',
+    example: 'x^2 in (1+2x)^5 is C(5,2) x 2^2 = 40.',
+    watch: 'k is the power of x, not automatically the second term number.'
+  },
+  factorRoots: {
+    move: 'For x^2 + bx + c, roots have sum -b and product c.',
+    example: 'x^2 - 5x + 6 = 0 has roots 2 and 3.',
+    watch: 'The coefficient b is the negative of the root sum.'
+  },
+  solveSurdQuadratic: {
+    move: 'Complete the square and read the two surd roots.',
+    example: 'x^2 - 6x + 7 = 0 becomes (x-3)^2 = 2, so x = 3 +/- sqrt2.',
+    watch: 'Keep both roots unless the question asks for one.'
+  },
+  completeSq: {
+    move: 'Halve the x coefficient, then square it.',
+    example: 'x^2 + 8x + 16 = (x+4)^2.',
+    watch: 'The bracket number is half the x coefficient.'
+  },
+  discriminant: {
+    move: 'Substitute into b^2 - 4ac cleanly.',
+    example: 'For 2x^2 - 5x + 3, Delta = 25 - 24 = 1.',
+    watch: 'b is squared, so a negative b still gives positive b^2.'
+  },
+  substitute: {
+    move: 'Evaluate polynomials in nested form.',
+    example: '2x^2 - 3x + 1 at x=4 is (2 x 4 - 3) x 4 + 1 = 21.',
+    watch: 'Include zero or missing coefficients mentally.'
+  },
+  remainderTheorem: {
+    move: 'For division by x-r, the remainder is f(r).',
+    example: 'Dividing by x-2 means plug in x=2.',
+    watch: 'Dividing by x+a means plug in x=-a.'
+  },
+  polynomialDivision: {
+    move: 'Use synthetic division: carry the lead coefficient down, multiply by r, then add along.',
+    example: 'For division by x-2, use r=2 in the synthetic row.',
+    watch: 'Write zero coefficients for missing powers.'
+  },
+  simultaneous: {
+    move: 'Eliminate one variable by matching coefficients, then substitute back if needed.',
+    example: 'x+y=5 and 2x-y=4 add to 3x=9, so x=3.',
+    watch: 'Subtract equations only after the target coefficients match.'
+  },
+  quadInequalityBounds: {
+    move: 'Find the roots first, then use a sign sketch.',
+    example: 'x^2 - 5x + 6 < 0 has roots 2 and 3, so it is negative between them.',
+    watch: 'A positive leading coefficient is positive outside the roots.'
+  },
+  modulusEqn: {
+    move: 'Split |A| = c into A = c or A = -c.',
+    example: '|2x-3| = 7 gives 2x-3 = 7 or -7.',
+    watch: 'c must be non-negative.'
+  },
+  modulusInequality: {
+    move: 'Think distance: compare how far x is from each fixed point.',
+    example: '|x-3| < |x-9| means x is closer to 3 than 9, so x < 6.',
+    watch: 'The cutoff is the midpoint of the two fixed points.'
+  },
+  indexLaws: {
+    move: 'Same base: multiply means add powers, divide means subtract, power means multiply.',
+    example: '2^5 / 2^2 = 2^3 = 8.',
+    watch: 'Only combine powers with the same base.'
+  },
+  expSolve: {
+    move: 'Rewrite the target as a power of the same base.',
+    example: '2^x = 32 means 2^x = 2^5, so x=5.',
+    watch: 'Make both sides the same base before reading exponents.'
+  },
+  evalLog: {
+    move: 'A log asks: the base to what power gives this number?',
+    example: 'log_2 32 = 5 because 2^5 = 32.',
+    watch: 'log_a a = 1 and log_a 1 = 0.'
+  },
+  changeBaseLog: {
+    move: 'If both numbers are powers of the same base, take the exponent ratio.',
+    example: 'log_4 8 = log(2^3)/log(2^2) = 3/2.',
+    watch: 'Do not divide the raw numbers 8 and 4.'
+  },
+  combineLogs: {
+    move: 'Sums become products, differences become quotients, coefficients become powers.',
+    example: 'log40 - log5 = log(40/5) = log8.',
+    watch: 'Move coefficients into powers before combining.'
+  },
+  exactTrig: {
+    move: 'Use the unit circle plus 30-60-90 and 45-45-90 triangles.',
+    example: 'sin(pi/3) = sqrt3/2.',
+    watch: 'Quadrant signs matter.'
+  },
+  doubleAngle: {
+    move: 'Use sin(2x)=2sinxcosx and cos(2x)=cos^2x-sin^2x.',
+    example: 'If sin x=3/5 and cos x=4/5, then sin(2x)=24/25.',
+    watch: 'The app uses acute-angle cases unless the prompt says otherwise.'
+  },
+  pythagIdentity: {
+    move: 'Use sin^2x + cos^2x = 1, often with a 3-4-5 triangle.',
+    example: 'If sin x=3/5, then cos x=4/5 for an acute angle.',
+    watch: 'Outside acute angles, the sign would need checking.'
+  },
+  cosineRule: {
+    move: 'Use c^2 = a^2 + b^2 - 2ab cos C.',
+    example: 'With angle 60 degrees, cos C = 1/2, so the final term is -ab.',
+    watch: 'If cos C is negative, subtracting it increases c^2.'
+  },
+  triangleArea: {
+    move: 'Use area = 1/2 ab sin C.',
+    example: 'Sides 4 and 6 with included angle 30 degrees give 12 x 1/2 = 6.',
+    watch: 'Make sure the angle is between the two given sides.'
+  },
+  countTrigSolns: {
+    move: 'Count periods first, then count the standard solutions per period.',
+    example: 'sin(kx)=a usually gives 2k solutions on 0 <= x < 2pi when -1<a<1.',
+    watch: 'Values outside [-1,1] give no sine or cosine solutions.'
+  },
+  trigPeriodMax: {
+    move: 'Period of sin(kx) or cos(kx) is 2pi/k; max and min come from amplitude.',
+    example: '3 + 2cos x has maximum 5 and minimum 1.',
+    watch: 'A negative amplitude flips where max and min occur.'
+  },
+  distance: {
+    move: 'Take coordinate differences first, then look for a Pythagorean triple.',
+    example: 'dx=15 and dy=36 is 3-4-5 scaled by 3, so distance is 39.',
+    watch: 'Distance is always non-negative.'
+  },
+  midpoint: {
+    move: 'Average the x-coordinates and y-coordinates separately.',
+    example: 'Midpoint of (2,3) and (8,7) is (5,5).',
+    watch: 'Do not mix an x-coordinate with a y-coordinate.'
+  },
+  perpGradient: {
+    move: 'A perpendicular gradient is the negative reciprocal.',
+    example: 'Perpendicular to gradient 3 is -1/3.',
+    watch: 'You need both the reciprocal and the sign change.'
+  },
+  lineEquation: {
+    move: 'Use y = mx + c, substitute the point, then solve for c.',
+    example: 'Through (3,5) with m=2 gives 5=6+c, so c=-1.',
+    watch: 'Gradient from two points is rise over run.'
+  },
+  circleCentre: {
+    move: 'Complete the square: x^2 + Dx gives centre coordinate -D/2.',
+    example: 'x^2 - 4x becomes (x-2)^2 - 4, so centre x-coordinate is 2.',
+    watch: 'The centre sign is opposite the bracket sign.'
+  },
+  circleRadius: {
+    move: 'Complete both squares, then read r^2 from the right hand side.',
+    example: 'If (x-2)^2 + (y+3)^2 = 25, the radius is 5.',
+    watch: 'Radius is the positive square root.'
+  },
+  differentiate: {
+    move: 'Use the power rule, then substitute the x-value.',
+    example: 'd/dx(3x^2 + 2x) = 6x + 2.',
+    watch: 'Differentiate before substituting.'
+  },
+  diffPower: {
+    move: 'Rewrite sqrt x as x^(1/2) and 1/x as x^(-1), then use the power rule.',
+    example: 'd/dx(6sqrt x) = 3/sqrt x.',
+    watch: 'The reciprocal has negative exponent.'
+  },
+  definiteIntegral: {
+    move: 'Find the antiderivative, then calculate upper minus lower.',
+    example: 'Integral of 3x^2 - 2 is x^3 - 2x, then use F(b)-F(a).',
+    watch: 'Subtraction of F(lower) changes signs inside it.'
+  },
+  trapeziumRule: {
+    move: 'Use h/2 times first plus last plus twice the middle ordinates.',
+    example: 'With y0,y1,y2: estimate = h/2(y0 + 2y1 + y2).',
+    watch: 'Only interior ordinates get doubled.'
+  },
+  stationaryPoint: {
+    move: 'Set f prime equal to zero and solve.',
+    example: 'For ax^2 + bx + c, the stationary x-value is -b/(2a).',
+    watch: 'For cubics there can be two stationary points.'
+  },
+  apSum: {
+    move: 'Use n/2(first + last), with last = a + (n-1)d.',
+    example: 'Sum of 5 terms from 3 to 15 is 5/2(18)=45.',
+    watch: 'A negative common difference still works.'
+  },
+  recurrenceTerm: {
+    move: 'Iterate in a tiny table rather than trying to solve the recurrence.',
+    example: 'x1=2, x_(n+1)=2x_n+1 gives 2,5,11,...',
+    watch: 'Check whether the first term is x1 or x0.'
+  },
+  gpSumFinite: {
+    move: 'Use a(r^n - 1)/(r - 1), or add directly when n is small.',
+    example: '2 + 6 + 18 = 26.',
+    watch: 'Do not use the infinite formula for a finite sum.'
+  },
+  gpInfinity: {
+    move: 'Read the first term as a, find the ratio by dividing the next term by the previous term, then use a/(1-r).',
+    example: '4 + 2 + 1 + ... has first term 4 and ratio 1/2, so the sum is 4/(1-1/2)=8.',
+    watch: 'The infinite sum exists only when |r| < 1.'
+  },
+  compose: {
+    move: 'Work inside out: calculate the inner function first.',
+    example: 'f(g(2)) means find g(2), then feed that value into f.',
+    watch: 'f(g(x)) and g(f(x)) are usually different.'
+  },
+  modulusEval: {
+    move: 'Evaluate inside each absolute value first, then make it positive.',
+    example: '|-3| + |5| = 8.',
+    watch: 'A minus sign outside the absolute value stays outside.'
+  },
+  pythagoras: {
+    move: 'Recognise scaled triples before squaring.',
+    example: '15,36,39 is 3-4-5 scaled by 3.',
+    watch: 'The hypotenuse is the longest side.'
+  },
+  circleArea: {
+    move: 'Use area = pi r^2 and circumference = 2pi r.',
+    example: 'Radius 4 gives area 16pi.',
+    watch: 'If given diameter, halve it first.'
+  },
+  arcSector: {
+    move: 'In radians, arc length is r theta and sector area is 1/2 r^2 theta.',
+    example: 'r=6, theta=pi/3 gives arc length 2pi.',
+    watch: 'These formulas assume theta is in radians.'
+  },
+  polygonInteriorAngle: {
+    move: 'Interior angle of a regular n-gon is 180 - 360/n degrees.',
+    example: 'For a hexagon, 180 - 60 = 120 degrees.',
+    watch: 'The formula is for regular polygons.'
+  },
+  diamondArea: {
+    move: '|x| + |y| = k has diagonal lengths 2k and 2k.',
+    example: 'Area = 1/2 x 2k x 2k = 2k^2.',
+    watch: 'Use the intercepts to see the diamond.'
+  },
+  necessarySufficient: {
+    move: 'A => B means A is sufficient for B, and B is necessary for A.',
+    example: 'If n is divisible by 4, then n is even: divisible by 4 is sufficient for even.',
+    watch: 'Necessary and sufficient point in opposite directions.'
+  },
+  conditionalForms: {
+    move: '"A only if B" means A => B; "A if B" means B => A.',
+    example: 'I eat only if I am hungry means eat => hungry.',
+    watch: 'Only-if is the phrase that often reverses intuition.'
+  },
+  converseContrapositive: {
+    move: 'Converse swaps the statement; contrapositive swaps and negates.',
+    example: 'A=>B has contrapositive not B=>not A.',
+    watch: 'Only the contrapositive is logically equivalent.'
+  },
+  compoundContrapositive: {
+    move: 'Take the contrapositive, then apply De Morgan to compound parts.',
+    example: 'Contrapositive of A and B => C is not C => not A or not B.',
+    watch: 'And becomes or when negated.'
+  },
+  andOrNegation: {
+    move: 'De Morgan: not(A and B) is not A or not B; not(A or B) is not A and not B.',
+    example: 'Not(even and positive) means odd or not positive.',
+    watch: 'Both the connective and each part change.'
+  },
+  quantifierNegation: {
+    move: 'Negating flips for all to exists, and exists to for all, then negates the predicate.',
+    example: 'Not(for all x, P(x)) means exists x such that not P(x).',
+    watch: 'Nested quantifiers flip one at a time.'
+  },
+  counterexamplePattern: {
+    move: 'To disprove A => B, make A true and B false.',
+    example: 'A false example proves nothing about an implication.',
+    watch: 'For iff, one failed direction is enough.'
+  },
+  proofErrorSpotting: {
+    move: 'Audit whether each implication is reversible and whether algebraic moves preserve domains, signs, and zero cases.',
+    example: 'Cancelling a from ab=ac requires a != 0; squaring needs a check back in the original equation.',
+    watch: 'Look for lost cases, extra roots, reversed inequalities, and converse-direction slips.'
+  }
+};
+
+function methodForKey(key) {
+  const gen = GENERATORS[key] || {};
+  return METHODS[key] || {
+    move: 'Use the shortest reliable route you can reproduce under time pressure.',
+    example: gen.example || '',
+    watch: 'Check signs, order, and exactly what the prompt asks for.'
+  };
+}
+
+function addMethodSection(host, title, text, className) {
+  const section = document.createElement('section');
+  section.className = 'method-section';
+  const h = document.createElement('h3');
+  h.textContent = title;
+  const p = document.createElement('p');
+  p.textContent = text;
+  if (className) p.className = className;
+  section.append(h, p);
+  host.appendChild(section);
+}
+
+function openMethod(key) {
+  if (!key || !GENERATORS[key]) return;
+  const method = methodForKey(key);
+  $('methodTitle').textContent = GENERATORS[key].name;
+  const body = $('methodBody');
+  body.replaceChildren();
+  addMethodSection(body, 'Shortcut', method.move);
+  addMethodSection(body, 'Example', method.example, 'method-example');
+  addMethodSection(body, 'Watch', method.watch);
+  $('methodBackdrop').classList.remove('hidden');
+}
+
+function closeMethod() {
+  $('methodBackdrop').classList.add('hidden');
+}
+
+function methodButton(key, label = '?', className = 'method-btn') {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = className;
+  btn.textContent = label;
+  btn.title = `Method for ${GENERATORS[key] ? GENERATORS[key].name : 'this skill'}`;
+  btn.setAttribute('aria-label', btn.title);
+  btn.dataset.methodKey = key;
+  btn.addEventListener('mousedown', e => e.stopPropagation());
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    openMethod(key);
+  });
+  return btn;
+}
 
 //=========================================================
 // ANSWER NORMALISATION + CHECKING
@@ -2244,12 +2888,13 @@ function populateSkills() {
       box.dataset.key = key;
       box.checked = true;
       const name = document.createElement('span');
+      name.className = 'skill-name';
       name.textContent = `${gen.name} `;
       const ex = document.createElement('span');
       ex.className = 'ex';
       ex.textContent = gen.example;
       name.appendChild(ex);
-      lab.append(box, name);
+      lab.append(box, name, methodButton(key));
       cont.appendChild(lab);
     });
   });
@@ -2287,7 +2932,7 @@ function applyPreset(name) {
       'squares','cubes','powers2','binomCoef',
       'simplifySurd','rationalise','denestSurd',
       'exactTrig','pythagIdentity','doubleAngle','cosineRule',
-      'expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','substitute','remainderTheorem','discriminant','quadInequalityBounds','modulusEqn','modulusInequality',
+      'expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','substitute','remainderTheorem','polynomialDivision','discriminant','quadInequalityBounds','modulusEqn','modulusInequality',
       'indexLaws','evalLog','expSolve','changeBaseLog','combineLogs',
       'differentiate','diffPower'
     ]);
@@ -2298,7 +2943,7 @@ function applyPreset(name) {
       'squares','cubes','powers2','binomCoef',
       'simplifySurd','rationalise','expandSurdSq','denestSurd',
       'exactTrig','pythagIdentity','doubleAngle','triangleArea','cosineRule','countTrigSolns','trigPeriodMax',
-      'expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','substitute','remainderTheorem','discriminant','simultaneous','quadInequalityBounds','modulusEqn','modulusInequality',
+      'expandBinomial','binomialCoeff','factorRoots','solveSurdQuadratic','completeSq','substitute','remainderTheorem','polynomialDivision','discriminant','simultaneous','quadInequalityBounds','modulusEqn','modulusInequality',
       'indexLaws','evalLog','expSolve','changeBaseLog','combineLogs',
       'distance','midpoint','perpGradient','lineEquation','circleCentre','circleRadius',
       'differentiate','diffPower','definiteIntegral','trapeziumRule','stationaryPoint',
@@ -2323,6 +2968,7 @@ const state = {
   duration: 120, pool: [], current: null,
   score: 0, right: 0, wrong: 0,
   mode: 'random',
+  progressReturnScreen: 'setup',
   adaptiveStats: {},
   reviewQueue: [],
   history: [], timerId: null, endsAt: 0,
@@ -2359,7 +3005,7 @@ const TARGET_MS = {
   exactTrig: 3000, pythagIdentity: 4500,
   simplifySurd: 4500, rationalise: 6500,
   completeSq: 9000, simultaneous: 8500,
-  remainderTheorem: 6500, lineEquation: 5500,
+  remainderTheorem: 6500, polynomialDivision: 9000, lineEquation: 5500,
   definiteIntegral: 8500, trapeziumRule: 8000, stationaryPoint: 8500,
   recurrenceTerm: 8000, arcSector: 5500,
   necessarySufficient: 6000, conditionalForms: 6500,
@@ -2570,6 +3216,9 @@ function nextQuestion() {
   rememberQuestionSignature(sig);
   state.questionStartedAt = nowMs();
   renderQuestion($('question'), q);
+  const method = $('questionMethodBtn');
+  method.dataset.methodKey = q.key;
+  method.disabled = false;
   $('answer').value = '';
   $('preview').textContent = '';
   $('answer').focus();
@@ -2628,6 +3277,10 @@ function startGame() {
   state.mode = $('practiceMode').value || 'random';
   state.adaptiveStats = aggregateSkillStats(savedHistory);
   state.reviewQueue = state.mode === 'misses' ? buildReviewQueue(savedHistory, skills) : [];
+  if (state.mode === 'misses' && state.reviewQueue.length === 0) {
+    alert('No recent misses for the selected skills yet.');
+    return;
+  }
   state.duration = Math.max(20, Math.min(900, parseInt($('duration').value) || 120));
   state.score = 0; state.right = 0; state.wrong = 0; state.history = [];
   state.lastQuestionSignature = '';
@@ -2718,7 +3371,7 @@ function endGame() {
     mark.className = `mark ${h.correct ? 'good' : 'bad'}`;
     mark.textContent = h.timedOut ? '⌛' : (h.correct ? '✓' : '✗');
 
-    const qCell = document.createElement('span');
+    const qCell = document.createElement('div');
     qCell.className = 'q-cell';
 
     const yours = document.createElement('span');
@@ -2733,6 +3386,7 @@ function endGame() {
 
     row.append(mark, qCell, yours);
     renderQuestion(qCell, h);
+    qCell.appendChild(methodButton(h.key, 'method', 'method-mini'));
     recapHost.appendChild(row);
   });
 
@@ -3353,6 +4007,7 @@ function renderBestPanel() {
 }
 
 function showProgress() {
+  state.progressReturnScreen = !$('results').classList.contains('hidden') ? 'results' : 'setup';
   $('setup').classList.add('hidden');
   $('results').classList.add('hidden');
   $('game').classList.add('hidden');
@@ -3486,6 +4141,14 @@ bindPresets();
 $('startBtn').addEventListener('click', startGame);
 $('skipBtn').addEventListener('click', () => submitAnswer(true));
 $('againBtn').addEventListener('click', startGame);
+$('questionMethodBtn').addEventListener('click', () => openMethod(state.current && state.current.key));
+$('methodCloseBtn').addEventListener('click', closeMethod);
+$('methodBackdrop').addEventListener('click', e => {
+  if (e.target === $('methodBackdrop')) closeMethod();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('methodBackdrop').classList.contains('hidden')) closeMethod();
+});
 $('backBtn').addEventListener('click', () => {
   $('results').classList.add('hidden');
   $('setup').classList.remove('hidden');
@@ -3494,7 +4157,8 @@ $('progressBtn').addEventListener('click', showProgress);
 $('viewProgressBtn').addEventListener('click', showProgress);
 $('progressBackBtn').addEventListener('click', () => {
   $('progress').classList.add('hidden');
-  $('setup').classList.remove('hidden');
+  if (state.progressReturnScreen === 'results') $('results').classList.remove('hidden');
+  else $('setup').classList.remove('hidden');
 });
 $('metricSelect').addEventListener('change', drawProgressChart);
 $('exportJsonBtn').addEventListener('click', exportProgressJson);
